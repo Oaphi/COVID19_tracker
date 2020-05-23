@@ -1,0 +1,24 @@
+{
+  "name": "covid_mailer",
+  "version": "0.0.1",
+  "description": "COVID-19 mailer",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "COVID",
+    "COVID-19",
+    "mailer",
+    "tracker"
+  ],
+  "author": "Oleg Valter",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.14",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "jsdoc": "^3.6.4",
+    "jshint": "^2.11.1",
+    "mocha": "^7.2.0"
+  }
+}
