@@ -6,6 +6,11 @@ function ttttt() {
   Logger.log(Math.floor(-1.88));
 }
 
+/**
+ * 
+ * @param {string} statee 
+ * @returns {string}
+ */
 function LoadTable(statee) {
 
 
@@ -52,12 +57,12 @@ function LoadTable(statee) {
 
 
 
-  //        tablebody3 =  '<tr><td><strong> ' + list1[0][2] +  '</strong></td><td align="center" ><strong> ' +   addCommas(list1[0][8]) + '</strong></td><td align="center" ><strong>' +   RedGreen(topercent(list1[0][9])) + "</strong> vs. " + addCommas(list1[0][10]) + '</td><td align="center" ><strong>' +   RedGreen(topercent(list1[0][11])) + "</strong> vs. " + addCommas(list1[0][12]) + '</td></tr>'; 
+  //tablebody3 =  '<tr><td><strong> ' + list1[0][2] +  '</strong></td><td align="center" ><strong> ' +   addCommas(list1[0][8]) + '</strong></td><td align="center" ><strong>' +   RedGreen(topercent(list1[0][9])) + "</strong> vs. " + addCommas(list1[0][10]) + '</td><td align="center" ><strong>' +   RedGreen(topercent(list1[0][11])) + "</strong> vs. " + addCommas(list1[0][12]) + '</td></tr>'; 
 
-  //        tablebodyr3 =  '<tr><td><strong> ' + list2[0][2] + '</strong></td><td align="center" ><strong> ' +   addCommas(list2[0][8]) + '</strong></td><td align="center" ><strong>' +   RedGreen(topercent(list2[0][9])) + "</strong> vs. " + addCommas(list2[0][10]) + '</td><td align="center" ><strong>' +   RedGreen(topercent(list2[0][11])) + "</strong> vs. " + addCommas(list2[0][12]) + '</td></tr>'; 
+  //tablebodyr3 =  '<tr><td><strong> ' + list2[0][2] + '</strong></td><td align="center" ><strong> ' +   addCommas(list2[0][8]) + '</strong></td><td align="center" ><strong>' +   RedGreen(topercent(list2[0][9])) + "</strong> vs. " + addCommas(list2[0][10]) + '</td><td align="center" ><strong>' +   RedGreen(topercent(list2[0][11])) + "</strong> vs. " + addCommas(list2[0][12]) + '</td></tr>'; 
 
-  //      var htmlListArray3 = '<div><font size="1"><b><font color="#000000">NEW HOSPITALIZATIONS&nbsp;</font></b><br></font></div><table cellspacing="0" cellpadding="0" dir="ltr" border="0" style=""><colgroup><col width="100"><col width="100"><col width="100"><col width="100"><col width="100"></colgroup>' + tableHead1 + '<tbody>' + tablebody3 + tablebodyr3 + '</tbody></table>';
-  //     htmlListArray3 +=  "<div>" + list1[0][2] + " now accounts for " + addCommas(list1[0][24+5])  + " or " + topercent(list1[0][24+5]/list2[0][24+5]) + " of the US's " + addCommas(list2[0][24+5])  + " total hospitalizations.</div><br>"
+  //var htmlListArray3 = '<div><font size="1"><b><font color="#000000">NEW HOSPITALIZATIONS&nbsp;</font></b><br></font></div><table cellspacing="0" cellpadding="0" dir="ltr" border="0" style=""><colgroup><col width="100"><col width="100"><col width="100"><col width="100"><col width="100"></colgroup>' + tableHead1 + '<tbody>' + tablebody3 + tablebodyr3 + '</tbody></table>';
+  //htmlListArray3 +=  "<div>" + list1[0][2] + " now accounts for " + addCommas(list1[0][24+5])  + " or " + topercent(list1[0][24+5]/list2[0][24+5]) + " of the US's " + addCommas(list2[0][24+5])  + " total hospitalizations.</div><br>"
 
 
 
@@ -68,107 +73,15 @@ function LoadTable(statee) {
   var htmlListArray3 = '<div><font size="1"><b><font color="#000000">NEWLY REPORTED DEATHS<font color="#EA452F">  +% increases in red (bad) &nbsp;</font></b><br></font></div><table cellspacing="0" cellpadding="0" dir="ltr" border="0" style=""><colgroup><col width="100"><col width="100"><col width="100"><col width="100"><col width="100"></colgroup>' + tableHead1 + '<tbody>' + tablebody3 + tablebodyr3 + '</tbody></table>';
   htmlListArray3 += "<div>" + list1[0][2] + " was " + ordinal_suffix_of(list1[0][41]) + " today: " + setDecimalPlaces(list1[0][40]) + " new deaths per 1MM residents | " + addCommas(list1[0][30]) + " to date </div><br>";
 
+  //tablebody5 =  '<tr><td><strong> ' + list1[0][2] +  '</strong></td><td align="center" ><strong> ' +   addCommas(list1[0][15]) + '</strong></td><td align="center" >' +   GreenRed(topercent(list1[0][16])) + " vs. " + addCommas(list1[0][21]) + '</td><td align="center" >' +   GreenRed(topercent(list1[0][18])) + " vs. " + addCommas(list1[0][21]) + '</td></tr>'; 
 
+  //tablebodyr5 =  '<tr><td><strong> ' + list2[0][2] + '</strong></td><td align="center" ><strong> ' +   addCommas(list2[0][15]) + '</strong></td><td align="center" >' +   GreenRed(topercent(list2[0][16])) + " vs. " + addCommas(list1[0][21]) + '</td><td align="center" >' +   GreenRed(topercent(list2[0][18])) + " vs. " + addCommas(list1[0][21]) + '</td></tr>'; 
 
-
-  //           tablebody5 =  '<tr><td><strong> ' + list1[0][2] +  '</strong></td><td align="center" ><strong> ' +   addCommas(list1[0][15]) + '</strong></td><td align="center" >' +   GreenRed(topercent(list1[0][16])) + " vs. " + addCommas(list1[0][21]) + '</td><td align="center" >' +   GreenRed(topercent(list1[0][18])) + " vs. " + addCommas(list1[0][21]) + '</td></tr>'; 
-
-  //           tablebodyr5 =  '<tr><td><strong> ' + list2[0][2] + '</strong></td><td align="center" ><strong> ' +   addCommas(list2[0][15]) + '</strong></td><td align="center" >' +   GreenRed(topercent(list2[0][16])) + " vs. " + addCommas(list1[0][21]) + '</td><td align="center" >' +   GreenRed(topercent(list2[0][18])) + " vs. " + addCommas(list1[0][21]) + '</td></tr>'; 
-
-  //       var htmlListArray5 = '<div><font size="1"><b><font color="#000000">NEW RECOVERIES&nbsp;</font></b><br></font></div><table cellspacing="0" cellpadding="0" dir="ltr" border="0" style=""><colgroup><col width="100"><col width="100"><col width="100"><col width="100"><col width="100"></colgroup>' + tableHead1 + '<tbody>' + tablebody5 + tablebodyr5 + '</tbody></table>';
-  //      htmlListArray5 +=  "<div>" + list1[0][2] + " now accounts for " + addCommas(list1[0][26+5])  + " or " + topercent(list1[0][26+5]/list2[0][26+5]) + " of the US's " + addCommas(list2[0][26+5])  + " total recoveries.</div><br>"  
-
-
-
-
-
-
-
-
-
-
+  //var htmlListArray5 = '<div><font size="1"><b><font color="#000000">NEW RECOVERIES&nbsp;</font></b><br></font></div><table cellspacing="0" cellpadding="0" dir="ltr" border="0" style=""><colgroup><col width="100"><col width="100"><col width="100"><col width="100"><col width="100"></colgroup>' + tableHead1 + '<tbody>' + tablebody5 + tablebodyr5 + '</tbody></table>';
+  //htmlListArray5 +=  "<div>" + list1[0][2] + " now accounts for " + addCommas(list1[0][26+5])  + " or " + topercent(list1[0][26+5]/list2[0][26+5]) + " of the US's " + addCommas(list2[0][26+5])  + " total recoveries.</div><br>"  
 
   htmlListArrays = '<font size="1" style="font-size:x-small;font-family: Calibri;">' + htmlListArray1 + htmlListArray2 + htmlListArray3 + '</font>';
   return htmlListArrays;
-}
-
-function GreenRed(v) {
-
-  if (v === "+N/A%") {
-    v = "<a style='color:#1261A0'>+%</a>";
-  }
-  else if (v === "0%") {
-    v = "<a style='color:black'>+0%</a>";
-  }
-  else {
-    if (parseFloat(v).toFixed(2) > 0) {
-      v = "<a style='color:#1261A0'>+" + v + "</a>";
-    }
-    else {
-      v = "<a style='color:#EA452F'>" + v + "</a>";
-    }
-  }
-  return v;
-}
-
-function RedGreen(v) {
-
-  if (v === "+N/A%") {
-    v = "<a style='color:#EA452F'>+%</a>";
-  }
-  else if (v === "0%") {
-    v = "<a style='color:black'>+0%</a>";
-  }
-  else {
-    if (parseFloat(v).toFixed(2) > 0) {
-      v = "<a style='color:#EA452F'>+" + v + "</a>";
-    }
-    else {
-      v = "<a style='color:#1261A0'>" + v + "</a>";
-    }
-  }
-
-  return v;
-}
-
-
-function doApprove() {
-  var cell = SpreadsheetApp.getActiveSheet().getActiveCell();
-  var row = cell.getRow();
-
-
-  var candidate = getCandidateFromRow(row);
-  var ui = SpreadsheetApp.getUi();
-  var response = ui.alert('Mail will be send from  ' + candidate.name + '?', ui.ButtonSet.YES_NO);
-
-
-  if (response === ui.Button.YES) {
-
-
-
-    var ws = SpreadsheetApp.getActiveSheet();
-    var eamilcount = ws.getRange(1, 3, ws.getLastRow(), 3).getValues();
-
-    for (var i = row - 1; i < eamilcount.length; i++) {
-
-      if (eamilcount[i][0] === "" || eamilcount[i][1] === "" || eamilcount[i][2] === "Mail Sent") {
-        //no op?
-        return;
-      }
-      else {
-        candidate = getCandidateFromRow(i + 1);
-        handleApproval2(i + 1, candidate);
-      }
-    }
-
-
-
-
-    Logger.log('Mail sent successfully');
-  } else {
-    Logger.log('Cancelled');
-  }
-
 }
 
 /**
@@ -198,7 +111,9 @@ function getCandidateFromRow(row) {
   return candidate;
 }
 
-
+/**
+ * @returns {Date}
+ */
 function getcelldate() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ws = ss.getSheetByName("Covid19");
@@ -217,9 +132,9 @@ function handleApproval(row, candidate) {
     .createTemplateFromFile('candidate-email');
   Logger.log('row:' + row);
   templ.candidate = candidate;
-  var ss = SpreadsheetApp.getActiveSheet();
-  var Statee = ss.getRange(row, 4).getValue();
-  var userId = ss.getRange(row, 1).getValue();
+  var activeSheet = SpreadsheetApp.getActiveSheet();
+  var Statee = activeSheet.getRange(row, 4).getValue();
+  var userId = activeSheet.getRange(row, 1).getValue();
   templ.tables = LoadTable(Statee);
   templ.Statee = Statee;
   templ.twitterLink = LoadTwitter(Statee);
@@ -258,8 +173,10 @@ function handleApproval(row, candidate) {
   var fulldate = days[(cellDate).getDay()];
 
   templ.fulldate = fulldate;
-
   templ.emailId = userId;
+
+  //TODO: same work (make scalable) starts here:
+
   var timeZone = Session.getScriptTimeZone();
   var message = templ.evaluate().getContent();
   var subjecte = FullStatee + " COVID-19 daily report: " + fulldate + Utilities.formatDate(cellDate, timeZone, ' M/d/YY');
@@ -277,7 +194,7 @@ function handleApproval(row, candidate) {
 
 
 /**
- * 
+ * @summary appends ordinal suffix
  * @param {number} i 
  * @returns {string}
  */
@@ -315,9 +232,9 @@ function handleApproval2(row, candidate) {
 
 
 
-  var ss = SpreadsheetApp.getActiveSheet();
-  var Statee = ss.getRange(row, 4).getValue();
-  var userId = ss.getRange(row, 1).getValue();
+  var activeSheet = SpreadsheetApp.getActiveSheet();
+  var Statee = activeSheet.getRange(row, 4).getValue();
+  var userId = activeSheet.getRange(row, 1).getValue();
   //templ.tables = LoadTable(Statee);
   templ.Statee = Statee;
   templ.twitterLink = LoadTwitter(Statee);
@@ -366,7 +283,14 @@ function handleApproval2(row, candidate) {
 
   templ.stateTES2 = addCommas(list1[0][25]);
 
-
+  /**
+   * @typedef {({
+   *    stateINF0,
+   *    stateINF1clr,
+   *    stateINF1cmp,
+   *    stateINF1val
+   * })} TemplateConfig
+   */
 
   templ.stateINF0 = addCommas(list1[0][3]);
   templ.stateINF1val = RedGreen2(topercent(list1[0][4]))[1];
@@ -435,9 +359,13 @@ function handleApproval2(row, candidate) {
   templ.fulldate = fulldate;
 
   templ.emailId = userId;
+
+  //current work scope starts here:
+
   var timeZone = Session.getScriptTimeZone();
   var message = templ.evaluate().getContent();
   var subjecte = FullStatee + " COVID-19 daily report: " + fulldate + Utilities.formatDate(cellDate, timeZone, ' M/d/YY');
+
   MailApp.sendEmail({
     name: "covidping.com",
     to: candidate.email,
@@ -447,53 +375,4 @@ function handleApproval2(row, candidate) {
 
   SpreadsheetApp.getActiveSheet().getRange(row, 5).setValue('Mail Sent');
 
-}
-
-function GreenRed2(v) {
-  var result;
-  if (v === "+N/A%") {
-    result = ['#1261A0', '+%'];
-    v = "<a style='color:#1261A0'>+%</a>";
-  }
-  else if (v === "0%") {
-    result = ['black', '+0%'];
-    v = "<a style='color:black'>+0%</a>";
-  }
-  else {
-    if (parseFloat(v).toFixed(2) > 0) {
-      result = ['#1261A0', '+' + v];
-      v = "<a style='color:#1261A0'>+" + v + "</a>";
-    }
-    else {
-      result = ['#EA452F', '' + v];
-      v = "<a style='color:#EA452F'>" + v + "</a>";
-    }
-  }
-  return result;
-}
-
-function RedGreen2(v) {
-  var result;
-
-  if (v === "+N/A%") {
-    result = ['#EA452F', '+%'];
-    v = "<a style='color:#EA452F'>+%</a>";
-  }
-  else if (v === "0%") {
-    result = ['black', '+0%'];
-    v = "<a style='color:black'>+0%</a>";
-  }
-  else {
-    if (parseFloat(v).toFixed(2) > 0) {
-      result = ['#EA452F', '+' + v];
-      v = "<a style='color:#EA452F'>+" + v + "</a>";
-    }
-    else {
-      result = ['black', '+0%'];
-      result = ['#1261A0', '' + v];
-      v = "<a style='color:#1261A0'>" + v + "</a>";
-    }
-  }
-
-  return result;
 }
