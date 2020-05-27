@@ -86,112 +86,81 @@ function LoadTable(statee) {
 
 /**
  * @typedef {({
- *  first_name: string,
- *  last_name: string,
- *  name: string,
- *  email: string
+ *  records : (any[][])
+ *  sheet : (GoogleAppsScript.Spreadsheet.Sheet | undefined)
+ * })} getCandidatesConfig
+ * 
+ * @param {getCandidatesConfig} config
+ * @returns {Candidate[]}
+ */
+function getCandidates({
+  sheet = SpreadsheetApp.getActiveSheet(),
+  records
+} = config) {
+
+  return records.map(record => {
+
+    const [id, subscribed, email, state, status] = record;
+
+    const [name] = email.split("@");
+
+    const [
+      first_name,
+      last_name = ""
+    ] = name.split(".");
+
+    return ({
+      id,
+      first_name,
+      last_name,
+      email,
+      state,
+      status,
+      subscribed,
+      get name() {
+        return `${this.first_name} ${this.last_name}`;
+      }
+    });
+  });
+
+}
+
+/**
+ * @typedef {({
+ *  first_name : string,
+ *  id : (string | number),
+ *  last_name : string,
+ *  name : string,
+ *  email : string,
+ *  state : (string | undefined),
+ *  status : (string | undefined),
+ *  subscribed : Date
  * })} Candidate
  * 
  * @param {number} row
  * @returns {Candidate}
  */
 function getCandidateFromRow(row) {
-  var values = SpreadsheetApp.getActiveSheet().getRange(row, 1, row, 3).getValues();
-  var rec = values[0];
 
-  var candidate =
-  {
-    first_name: rec[0],
-    last_name: rec[1],
-    email: rec[2]
-  };
+  const sheet = SpreadsheetApp.getActiveSheet();
 
-  candidate.name = candidate.first_name;
+  const values = sheet.getRange(row, 1, 1, 7).getValues();
 
-  return candidate;
+  return getCandidates({
+    sheet, 
+    records: values
+  })[0];
 }
 
 /**
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
  * @returns {Date}
  */
-function getcelldate() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var ws = ss.getSheetByName("Covid19");
-  var cellDate = new Date(ws.getRange("A2").getValue().getTime());
-  return cellDate;
+function getcelldate(
+  sheet
+) {
+  return new Date(sheet.getRange("A2").getValue());
 }
-
-/**
- * @summary fills template and sends out emails
- * @param {number} row 
- * @param {Candidate} candidate 
- * @returns {void}
- */
-function handleApproval(row, candidate) {
-  var templ = HtmlService
-    .createTemplateFromFile('candidate-email');
-  Logger.log('row:' + row);
-  templ.candidate = candidate;
-  var activeSheet = SpreadsheetApp.getActiveSheet();
-  var Statee = activeSheet.getRange(row, 4).getValue();
-  var userId = activeSheet.getRange(row, 1).getValue();
-  templ.tables = LoadTable(Statee);
-  templ.Statee = Statee;
-  templ.twitterLink = LoadTwitter(Statee);
-
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var ws = ss.getSheetByName("Covid19");
-
-  var data = ws.getRange(1, 2, 60).getValues();
-
-  var roww;
-
-  for (var i = 0; i < data.length; i++) {
-    if (data[i][0] === Statee) { //[1] because column B
-      roww = i + 1;
-    }
-  }
-
-
-  var list1 = ws.getRange(roww, 1, 1, 28).getValues();
-  var FullStatee = list1[0][2];
-
-  var cellDate = getcelldate();
-
-  templ.FullStatee = FullStatee;
-
-
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-  ];
-  var fulldate = days[(cellDate).getDay()];
-
-  templ.fulldate = fulldate;
-  templ.emailId = userId;
-
-  //TODO: same work (make scalable) starts here:
-
-  var timeZone = Session.getScriptTimeZone();
-  var message = templ.evaluate().getContent();
-  var subjecte = FullStatee + " COVID-19 daily report: " + fulldate + Utilities.formatDate(cellDate, timeZone, ' M/d/YY');
-  MailApp.sendEmail({
-    name: "covidping.com",
-    to: candidate.email,
-    subject: subjecte,
-    htmlBody: message
-  });
-
-  SpreadsheetApp.getActiveSheet().getRange(row, 5).setValue('Mail Sent');
-
-}
-
-
 
 /**
  * @summary appends ordinal suffix
@@ -215,164 +184,4 @@ function ordinal_suffix_of(i) {
   }
 
   return i + "th";
-}
-
-/**
- * @summary fills template and sends out emails
- * @param {number} row 
- * @param {Candidate} candidate 
- * @returns {void}
- */
-function handleApproval2(row, candidate) {
-
-  var templ = HtmlService.createTemplateFromFile('candidate-email2');
-
-  Logger.log('row:' + row);
-  templ.candidate = candidate;
-
-
-
-  var activeSheet = SpreadsheetApp.getActiveSheet();
-  var Statee = activeSheet.getRange(row, 4).getValue();
-  var userId = activeSheet.getRange(row, 1).getValue();
-  //templ.tables = LoadTable(Statee);
-  templ.Statee = Statee;
-  templ.twitterLink = LoadTwitter(Statee);
-
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var ws = ss.getSheetByName("Covid19");
-
-  var data = ws.getRange(1, 2, 60).getValues();
-
-  var roww;
-
-  for (var i = 0; i < data.length; i++) {
-    if (data[i][0] === Statee) { //[1] because column B
-      roww = i + 1;
-    }
-  }
-
-
-  var list1 = ws.getRange(roww, 1, 1, 43).getValues();
-  var list2 = ws.getRange(2, 1, 1, 43).getValues();
-  var FullStatee = list1[0][2];
-
-  var cellDate = getcelldate();
-
-  templ.FullStatee = FullStatee;
-
-  templ.stateTES0 = addCommas(list1[0][23]);
-  templ.stateTES1val = GreenRed2(topercent(list1[0][24]))[1];
-  templ.stateTES1clr = "color:" + GreenRed2(topercent(list1[0][24]))[0];
-  templ.stateTES1cmp = addCommas(list1[0][25]);
-
-  templ.stateTES2val = GreenRed2(topercent(list1[0][26]))[1];
-  templ.stateTES2clr = "color:" + GreenRed2(topercent(list1[0][26]))[0];
-  templ.stateTES2cmp = addCommas(list1[0][27]);
-
-  templ.countryTES0 = addCommas(list2[0][23]);
-  templ.countryTES1val = GreenRed2(topercent(list2[0][24]))[1];
-  templ.countryTES1clr = "color:" + GreenRed2(topercent(list2[0][24]))[0];
-  templ.countryTES1cmp = addCommas(list2[0][25]);
-
-  templ.countryTES2val = GreenRed2(topercent(list2[0][26]))[1];
-  templ.countryTES2clr = "color:" + GreenRed2(topercent(list2[0][26]))[0];
-  templ.countryTES2cmp = addCommas(list2[0][27]);
-
-  templ.TESstatement = list1[0][2] + " was " + ordinal_suffix_of(list1[0][37]) + " today: " + setDecimalPlaces(list1[0][36]) + " new tests per 1MM residents | " + addCommas(list1[0][32]) + " total";
-
-  templ.stateTES2 = addCommas(list1[0][25]);
-
-  /**
-   * @typedef {({
-   *    stateINF0,
-   *    stateINF1clr,
-   *    stateINF1cmp,
-   *    stateINF1val
-   * })} TemplateConfig
-   */
-
-  templ.stateINF0 = addCommas(list1[0][3]);
-  templ.stateINF1val = RedGreen2(topercent(list1[0][4]))[1];
-  templ.stateINF1clr = "color:" + RedGreen2(topercent(list1[0][4]))[0];
-  templ.stateINF1cmp = addCommas(list1[0][5]);
-
-  templ.stateINF2val = RedGreen2(topercent(list1[0][6]))[1];
-  templ.stateINF2clr = "color:" + RedGreen2(topercent(list1[0][6]))[0];
-  templ.stateINF2cmp = addCommas(list1[0][7]);
-
-  templ.countryINF0 = addCommas(list2[0][3]);
-  templ.countryINF1val = RedGreen2(topercent(list2[0][4]))[1];
-  templ.countryINF1clr = "color:" + RedGreen2(topercent(list2[0][4]))[0];
-  templ.countryINF1cmp = addCommas(list2[0][5]);
-
-  templ.countryINF2val = GreenRed2(topercent(list2[0][6]))[1];
-  templ.countryINF2clr = "color:" + RedGreen2(topercent(list2[0][6]))[0];
-  templ.countryINF2cmp = addCommas(list2[0][7]);
-
-  templ.INFstatement = list1[0][2] + " was " + ordinal_suffix_of(list1[0][39]) + " today: " + setDecimalPlaces(list1[0][38]) + " new infections per 1MM residents | " + addCommas(list1[0][28]) + " total";
-
-  templ.stateINF2 = addCommas(list1[0][5]);
-
-  templ.stateINF0 = addCommas(list1[0][3]);
-
-
-  templ.stateDEA0 = addCommas(list1[0][13]);
-  templ.stateDEA1val = RedGreen2(topercent(list1[0][14]))[1];
-  templ.stateDEA1clr = "color:" + RedGreen2(topercent(list1[0][14]))[0];
-  templ.stateDEA1cmp = addCommas(list1[0][15]);
-
-  templ.stateDEA2val = RedGreen2(topercent(list1[0][16]))[1];
-  templ.stateDEA2clr = "color:" + RedGreen2(topercent(list1[0][16]))[0];
-  templ.stateDEA2cmp = addCommas(list1[0][17]);
-
-  templ.countryDEA0 = addCommas(list2[0][13]);
-  templ.countryDEA1val = RedGreen2(topercent(list2[0][14]))[1];
-  templ.countryDEA1clr = "color:" + RedGreen2(topercent(list2[0][14]))[0];
-  templ.countryDEA1cmp = addCommas(list2[0][15]);
-
-  templ.countryDEA2val = RedGreen2(topercent(list2[0][16]))[1];
-  templ.countryDEA2clr = "color:" + RedGreen2(topercent(list2[0][16]))[0];
-  templ.countryDEA2cmp = addCommas(list2[0][17]);
-
-  templ.DEAstatement = list1[0][2] + " was " + ordinal_suffix_of(list1[0][41]) + " today: " + setDecimalPlaces(list1[0][40]) + " new deaths per 1MM residents | " + addCommas(list1[0][30]) + " total";
-
-  templ.stateDEA2 = addCommas(list1[0][15]);
-
-
-  templ.countryTOTtes = addCommas(list2[0][32]);
-  templ.countryTOTinf = addCommas(list2[0][28]);
-  templ.countryTOTdea = addCommas(list2[0][30]);
-
-
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-  ];
-  var fulldate = days[(cellDate).getDay()];
-
-  templ.fulldate = fulldate;
-
-  templ.emailId = userId;
-
-  //current work scope starts here:
-
-  var timeZone = Session.getScriptTimeZone();
-  var message = templ.evaluate().getContent();
-  var subjecte = FullStatee + " COVID-19 daily report: " + fulldate + Utilities.formatDate(cellDate, timeZone, ' M/d/YY');
-
-  MailApp.sendEmail({
-    name: "covidping.com",
-    to: candidate.email,
-    subject: subjecte,
-    htmlBody: message
-  });
-
-  SpreadsheetApp.getActiveSheet().getRange(row, 5).setValue('Mail Sent');
-
 }

@@ -9,7 +9,6 @@ function addCommas(nStr) {
         nStr = (nStr).toFixed(0);
     }
 
-    nStr += '';
     var x = nStr.split('.');
     var x1 = x[0];
     var x2 = x.length > 1 ? '.' + x[1] : '';
@@ -113,3 +112,97 @@ function topercent(a) {
 
     return a;
 }
+
+/**
+ * @summary splits array in consequitive subsequences
+ * @param {any[]} [source] 
+ * @returns {any[][]}
+ */
+const splitIntoConseq = (source = []) => {
+
+    const sequences = [], tails = [];
+
+    let highestElem = -Infinity;
+
+    source.forEach(element => {
+
+        const precedeIndex = tails.indexOf(element + 1);
+        const tailIndex = tails.indexOf(element - 1);
+
+        if (tailIndex > -1) {
+            sequences[tailIndex].push(element);
+            tails[tailIndex] = element;
+            return;
+        }
+
+        if (precedeIndex > -1) {
+            sequences[precedeIndex].unshift(element);
+            tails[precedeIndex] = element;
+            return;
+        }
+
+        if (element > highestElem) {
+            tails.push(element);
+            sequences.push([element]);
+            highestElem = element;
+            return;
+        }
+
+        const spliceIndex = tails.findIndex((e) => e < element) + 1;
+        tails.splice(spliceIndex, 0, element);
+        sequences.splice(spliceIndex, 0, [element]);
+    });
+
+    return sequences;
+};
+
+/**
+ * @summary gets current week day
+ * @param {Date} date
+ * @param {string} [locale] 
+ * @returns {string}
+ */
+const getDayOfWeek = (date, locale = "en-US") => {
+    const intl = new Intl.DateTimeFormat(locale, {
+        weekday: "long"
+    });
+
+    return intl.format(date);
+};
+
+/**
+ * @summary gets value from object or inits it via callback
+ * @param {object} obj
+ * @param {string} propName
+ * @param {function(object) : any} [callback]
+ * @returns {any}
+ */
+const getOrInitProp = (obj, propName, callback) => {
+
+    if (propName in obj) {
+        return obj[propName];
+    }
+
+    if (callback) {
+        obj[propName] = callback(obj);
+        return obj[propName];
+    }
+};
+
+/**
+ * @summary builds <state> was <place> today: <new total> new <type> per 1MM residents | <total> total
+ * @param {string} stateFullName 
+ * @param {number} place
+ * @param {number} newTotal
+ * @param {("tests"|"infections"|"deaths")} type
+ * @param {number} total
+ * @returns {string}
+ */
+const buildStatement = (stateFullName, place, newTotal, type, total) => {
+
+    const todayWas = `${stateFullName} was ${ordinal_suffix_of(place)} today: `;
+
+    const totalWas = `${setDecimalPlaces(newTotal)} new ${type} per 1MM residents | ${addCommas(total)}`;
+
+    return `${todayWas} ${totalWas} total`;
+};
