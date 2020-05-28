@@ -1,4 +1,4 @@
-//no support for class props;
+//no support for class props in GAS yet;
 const StateStatics = {
     defStart : 2,
     defThreshold: 5,
@@ -90,10 +90,10 @@ var State = class {
     }
 
     /**
-     * @param {number} [step]
+     * @summary launches the execution if under threshold
      * @returns {State}
      */
-    continue(step) {
+    continue() {
 
         if (!this.canContinue()) {
 
@@ -130,6 +130,7 @@ var State = class {
     }
 
     /**
+     * @summary loads the persisted state
      * @returns {State}
      */
     load() {
@@ -151,6 +152,7 @@ var State = class {
     }
 
     /**
+     * @summary resets state configuration to defaults
      * @returns {State}
      */
     reset() {
@@ -166,6 +168,10 @@ var State = class {
         return this;
     }
 
+    /**
+     * @summary persists state config
+     * @returns {State}
+     */
     save() {
         const store = PropertiesService.getScriptProperties();
 
@@ -192,7 +198,7 @@ var State = class {
     }
 
     /**
-     * 
+     * @summary sets threshold that stops execution
      * @param {number} minutes 
      * @returns {State}
      */
