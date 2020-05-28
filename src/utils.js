@@ -101,13 +101,14 @@ function setDecimalPlaces(i) {
 function topercent(a) {
 
     if (a !== "+N/A%" && a !== "0%") {
-        a = a * 100;
-        if ((a).toFixed(2) < 1 && (a).toFixed(2) > -1 && (a).toFixed(2) !== 0) {
-            a = parseFloat(a).toFixed(2) + "%";
-        }
-        else {
-            a = (a).toFixed(0) + "%";
-        }
+
+        const float = parseFloat(a);
+
+        a = float * 100;
+
+        a = (float < 1 && float > -1 && float) ? 
+            `${float.toFixed(2)}%` : 
+            `${float.toFixed(0)}%`;
     }
 
     return a;
@@ -192,13 +193,13 @@ const getOrInitProp = (obj, propName, callback) => {
 /**
  * @summary builds <state> was <place> today: <new total> new <type> per 1MM residents | <total> total
  * @param {string} stateFullName 
- * @param {number} place
+ * @param {number} [place]
  * @param {number} newTotal
  * @param {("tests"|"infections"|"deaths")} type
  * @param {number} total
  * @returns {string}
  */
-const buildStatement = (stateFullName, place, newTotal, type, total) => {
+const buildStatement = (stateFullName, place = 1, newTotal, type, total) => {
 
     const todayWas = `${stateFullName} was ${ordinal_suffix_of(place)} today: `;
 
@@ -206,3 +207,43 @@ const buildStatement = (stateFullName, place, newTotal, type, total) => {
 
     return `${todayWas} ${totalWas} total`;
 };
+
+/**
+ * @summary loads saved state
+ * @returns {object}
+ */
+function getSavedState() {
+    const store = PropertiesService.getScriptProperties();
+    const prop = store.getProperty("continuator");
+
+    if (!prop) {
+        new State({}).save();
+        return getSavedState();
+    }
+
+    return JSON.parse(prop);
+}
+
+/**
+ * @summary appends ordinal suffix
+ * @param {number} i 
+ * @returns {string}
+ */
+function ordinal_suffix_of(i) {
+    var j = i % 10,
+        k = i % 100;
+
+    if (j === 1 && k !== 11) {
+        return i + "st";
+    }
+
+    if (j === 2 && k !== 12) {
+        return i + "nd";
+    }
+
+    if (j === 3 && k !== 13) {
+        return i + "rd";
+    }
+
+    return i + "th";
+}

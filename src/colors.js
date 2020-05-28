@@ -16,27 +16,15 @@ const blueLink = colorLink("#1261A0");
 const blackLink = colorLink("black");
 
 /**
- *
- * @param {string} v
- * @returns {string}
+ * @summary validates that 0.00%, 0%, etc are treated the same way
+ * @param {(number | string)} num 
+ * @returns {boolean}
  */
-function GreenRed(v) {
+const isZero = (num) => {
+    const inted = parseInt(num);
+    const floated = parseFloat(num);
 
-    if (v === "+N/A%") {
-        v = blueLink("+%");
-    }
-    else if (v === "0%") {
-        v = blackLink("+0%");
-    }
-    else {
-        if (parseFloat(v).toFixed(2) > 0) {
-            v = blueLink(`+${v}`);
-        }
-        else {
-            v = redLink(v);
-        }
-    }
-    return v;
+    return inted === 0 && (inted === floated);
 }
 
 /**
@@ -45,12 +33,13 @@ function GreenRed(v) {
  * @returns {string}
  */
 function GreenRed2(v) {
+
     var result;
     if (v === "+N/A%") {
         result = ['#1261A0', '+%'];
         v = blueLink("+%");
     }
-    else if (v === "0%") {
+    else if (isZero(v)) {
         result = ['black', '+0%'];
         v = blackLink("+0%");
     }
@@ -68,31 +57,6 @@ function GreenRed2(v) {
 }
 
 /**
- *
- * @param {string} v
- * @returns {string}
- */
-function RedGreen(v) {
-
-    if (v === "+N/A%") {
-        v = redLink("+%");
-    }
-    else if (v === "0%") {
-        v = blackLink("+0%");
-    }
-    else {
-        if (parseFloat(v).toFixed(2) > 0) {
-            v = redLink(`+${v}`);
-        }
-        else {
-            v = blueLink(v);
-        }
-    }
-
-    return v;
-}
-
-/**
  * 
  * @param {string} v 
  * @returns {string}
@@ -104,7 +68,7 @@ function RedGreen2(v) {
         result = ['#EA452F', '+%'];
         v = redLink("+%");
     }
-    else if (v === "0%") {
+    else if (isZero(v)) {
         result = ['black', '+0%'];
         v = blackLink("+0%");
     }
