@@ -123,6 +123,7 @@ const getTotalByUS = (sheet) => {
  *  covidDataByState : Object.<string, (number | string)[]>,
  *  currentDate : Date,
  *  currentWeekday : string,
+ *  emails : object[],
  *  spreadsheet : (GoogleAppsScript.Spreadsheet.Spreadsheet),
  *  sheet : (GoogleAppsScript.Spreadsheet.Sheet),
  *  timezone : (string),
@@ -132,6 +133,7 @@ const getTotalByUS = (sheet) => {
  * @summary fills template and sends out emails
  * @param {Candidate} candidate 
  * @param {approvalConfig} config
+ * @param {boolean} sandboxed
  * @returns {void}
  */
 function handleApproval2(
@@ -145,7 +147,8 @@ function handleApproval2(
         currentDate,
         timezone = Session.getScriptTimeZone(),
         currentWeekday
-    } = config
+    } = config,
+    sandboxed
 ) {
 
     const {
@@ -256,15 +259,53 @@ function handleApproval2(
 
     var subject = FullStatee + " COVID-19 daily report: " + currentWeekday + formattedDate;
 
-    emails.push({
-        to : candidate.email,
+    if (sandboxed) {
+        emails.push({
+            to: candidate.email,
+            subject,
+            message
+        });
+        return;
+    }
+
+    sendEmail({
+        to: candidate.email,
         subject,
         html: message
     });
-
-    // sendEmail({
-    //   to: "o.a.philippov@gmail.com",
-    //   subject,
-    //   html: message
-    // });
 }
+
+/**
+ * @typedef {({
+ *  to : string,
+ *  subject : string,
+ *  message : string
+ * })} emailConfig
+ * 
+ * @param {emailConfig[]} emails
+ * @returns {void}
+ */
+const handleSandbox = (emails) => {
+
+    const html = emails.map(email => {
+        const { to, subject, message } = email;
+        return `<h1>To: ${to}</h1><h2>Subject ${subject}</h2>${message}`;
+    }).join("");
+
+    const ui = SpreadsheetApp.getUi();
+
+    const output = HtmlService.createHtmlOutput(html);
+
+    const modalConfig = ({
+        width: 400,
+        get height() {
+            return this.width * 1.5;
+        }
+    });
+
+    output
+        .setWidth(modalConfig.width)
+        .setHeight(modalConfig.height);
+
+    ui.showModalDialog(, "Sandbox");
+};
