@@ -47,8 +47,9 @@ const validForSending = (email, state, status) => {
 /**
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet 
  * @param {GoogleAppsScript.Spreadsheet.Sheet} covidStatsSheet
+ * @param {boolean} sandboxed
  */
-const sendout = (sheet, covidStatsSheet) =>
+const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
     /**
      * @param {State} STATE
@@ -62,8 +63,8 @@ const sendout = (sheet, covidStatsSheet) =>
 
         const covidDataByState = {};
 
-        const numUsefulColumns = 41;
-        
+        const numUsefulColumns = 42;
+
         covidStatsSheet
             .getRange(3, 1, covidStatsSheet.getLastRow(), numUsefulColumns)
             .getValues()
@@ -72,7 +73,7 @@ const sendout = (sheet, covidStatsSheet) =>
             });
 
         const records = sheet.getRange(startAt, START_COL, sheet.getLastRow(), END_COL).getValues();
-        
+
         const candidates = getCandidates({
             records,
             sheet
@@ -113,17 +114,22 @@ const sendout = (sheet, covidStatsSheet) =>
                 break;
             }
 
-            handleApproval2(candidate, approvalConfig);
+            try {
+                handleApproval2(candidate, approvalConfig, sandboxed);
+            }
+            catch (error) {
+                console.log(error);
+                STATE.save();
+            }
 
             rowIndicesSent.push(rowIndex);
 
             STATE.count();
         }
 
-        const html = approvalConfig.emails.map(email => email.html).join("");
-        const fd = DriveApp.getRootFolder();
-        const folder = fd.createFolder("test_covid_email");
-        const file = folder.createFile( "test_file", html, MimeType.HTML);
+        if (sandboxed) {
+            handleSandbox(approvalConfig.emails);
+        }
 
         updateSentStatus({
             rows: rowIndicesSent,
@@ -135,9 +141,10 @@ const sendout = (sheet, covidStatsSheet) =>
 
 /**
  * @summary builds confirmation popup
+ * @param {boolean} [sandboxed]
  * @returns {boolean}
  */
-function doApprove() {
+function doApprove(sandboxed = false) {
 
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -149,10 +156,10 @@ function doApprove() {
 
     const state = State
         .getState({
-            callback: sendout(usersSheet, covidStatsSheet)
+            callback: sendout(usersSheet, covidStatsSheet, sandboxed)
         });
 
-    var candidate = getCandidateFromRow(state.start);
+    var candidate = getCandidateFromRow( usersSheet, state.start);
 
     var response = ui.alert('Mail will be sent starting from ' + candidate.name + ', confirm?', ui.ButtonSet.YES_NO);
 
@@ -160,23 +167,21 @@ function doApprove() {
 
         state.continue();
 
-        Logger.log('Mail sent successfully');
+        console.log('Mail sent successfully');
 
         return true;
     }
 
-    Logger.log('Cancelled');
+    console.log('Cancelled');
     return false;
 }
 
-function deleteSP() {
-    const store = PropertiesService.getScriptProperties();
-    store.deleteProperty("continuator");
-    store.deleteProperty("test_covid_email")
-}
+/**
+ * @summary launches the workflow, but does not send out the emails
+ */
+const sandboxApprove = () => {
 
-function testSP() {
-    const store = PropertiesService.getScriptProperties();
-    const prop = store.getProperty("continuator");
-    console.log({ prop });
-}
+    const isSandboxed = true;
+
+    return doApprove(isSandboxed);
+};
