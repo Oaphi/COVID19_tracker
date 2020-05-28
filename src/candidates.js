@@ -48,13 +48,12 @@ function getCandidates({
  *  status : (string | undefined),
  *  subscribed : Date
  * })} Candidate
- * 
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
  * @param {number} row
  * @returns {Candidate}
  */
-function getCandidateFromRow(row) {
-
-  const sheet = SpreadsheetApp.getActiveSheet();
+function getCandidateFromRow(sheet, row) {
 
   const values = sheet.getRange(row, 1, 1, 7).getValues();
 
