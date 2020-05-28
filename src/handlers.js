@@ -1,78 +1,4 @@
 /**
- * @summary fills template and sends out emails
- * @param {number} row 
- * @param {Candidate} candidate 
- * @returns {void}
- */
-function handleApproval(row, candidate) {
-
-    var templ = HtmlService.createTemplateFromFile('candidate-email');
-
-    Logger.log('row:' + row);
-
-    templ.candidate = candidate;
-
-    var activeSheet = SpreadsheetApp.getActiveSheet();
-
-    var Statee = activeSheet.getRange(row, 4).getValue();
-    var userId = activeSheet.getRange(row, 1).getValue();
-
-    templ.tables = LoadTable(Statee);
-    templ.Statee = Statee;
-    templ.twitterLink = LoadTwitter(Statee);
-
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var ws = ss.getSheetByName("Covid19");
-
-    var data = ws.getRange(1, 2, 60).getValues();
-
-    var roww;
-
-    for (var i = 0; i < data.length; i++) {
-        if (data[i][0] === Statee) { //[1] because column B
-            roww = i + 1;
-        }
-    }
-
-    var list1 = ws.getRange(roww, 1, 1, 28).getValues();
-    var FullStatee = list1[0][2];
-
-    var cellDate = getcelldate(ws);
-
-    templ.FullStatee = FullStatee;
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    var fulldate = days[(cellDate).getDay()];
-
-    templ.fulldate = fulldate;
-    templ.emailId = userId;
-
-    var timeZone = Session.getScriptTimeZone();
-    var message = templ.evaluate().getContent();
-    var subject = FullStatee + " COVID-19 daily report: " + fulldate + Utilities.formatDate(cellDate, timeZone, ' M/d/YY');
-
-    // sendEmail({
-    //   to: candidate.email,
-    //   subject,
-    //   html: message
-    // });
-
-    updateSentStatus({
-        rows: [row],
-        sheet: activeSheet
-    });
-}
-
-/**
  * @typedef {({
  *  rows : number[],
  *  sheet : (GoogleAppsScript.Spreadsheet.Spreadsheet | undefined),
@@ -198,19 +124,37 @@ function handleApproval2(
     commonTemplate.countryINF1val = RedGreen2(countryInfectionsPercent1)[1];
     commonTemplate.countryINF1clr = "color:" + RedGreen2(countryInfectionsPercent1)[0];
 
-    const countryInfectionsPercent2 = getOrInitProp(commonTemplateValues, "countryInfectionsPercent2", () => topercent(totalUS[6]));
+    const countryInfectionsPercent2 = getOrInitProp(
+        commonTemplateValues,
+        "countryInfectionsPercent2",
+        () => topercent(totalUS[6])
+    );
     commonTemplate.countryINF2val = GreenRed2(countryInfectionsPercent2)[1];
     commonTemplate.countryINF2clr = "color:" + RedGreen2(countryInfectionsPercent2)[0];
 
-    const countryDeathspercent1 = getOrInitProp(commonTemplateValues, "countryDeathspercent1", () => topercent(totalUS[14]));
+    const countryDeathspercent1 = getOrInitProp(
+        commonTemplateValues,
+        "countryDeathspercent1",
+        () => topercent(totalUS[14])
+    );
     commonTemplate.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
     commonTemplate.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
 
-    commonTemplate.stateTES1val = GreenRed2(topercent(userStateData[24]))[1];
-    commonTemplate.stateTES1clr = "color:" + GreenRed2(topercent(userStateData[24]))[0];
+    const stateTestPercent1 = getOrInitProp(
+        commonTemplateValues,
+        "stateTestPercent1",
+        () => topercent(userStateData[24])
+    );
+    commonTemplate.stateTES1val = GreenRed2(stateTestPercent1)[1];
+    commonTemplate.stateTES1clr = "color:" + GreenRed2(stateTestPercent1)[0];
 
-    commonTemplate.stateTES2val = GreenRed2(topercent(userStateData[26]))[1];
-    commonTemplate.stateTES2clr = "color:" + GreenRed2(topercent(userStateData[26]))[0];
+    const stateTestPercent2 = getOrInitProp(
+        commonTemplateValues,
+        "stateTestPercent2",
+        () => topercent(userStateData[26])
+    );
+    commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
+    commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
 
     const stateInfectionsPercent1 = topercent(userStateData[4]);
     commonTemplate.stateINF1val = RedGreen2(stateInfectionsPercent1)[1];
@@ -289,7 +233,7 @@ const handleSandbox = (emails) => {
 
     const html = emails.map(email => {
         const { to, subject, message } = email;
-        return `<h1>To: ${to}</h1><h2>Subject ${subject}</h2>${message}`;
+        return `<h2>To: ${to}</h2><h3>Subject: ${subject}</h3>${message}`;
     }).join("");
 
     const ui = SpreadsheetApp.getUi();
@@ -297,9 +241,9 @@ const handleSandbox = (emails) => {
     const output = HtmlService.createHtmlOutput(html);
 
     const modalConfig = ({
-        width: 400,
+        width: 800,
         get height() {
-            return this.width * 1.5;
+            return this.width * 1.25;
         }
     });
 
@@ -307,5 +251,5 @@ const handleSandbox = (emails) => {
         .setWidth(modalConfig.width)
         .setHeight(modalConfig.height);
 
-    ui.showModalDialog(, "Sandbox");
+    ui.showModalDialog(output, "Sandbox");
 };
