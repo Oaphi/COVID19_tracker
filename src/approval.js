@@ -11,28 +11,54 @@ function doApprove(sandboxed = false) {
 
     const usersSheet = spreadsheet.getSheetByName("Users");
 
-    var ui = SpreadsheetApp.getUi();
+    const ui = SpreadsheetApp.getUi();
+
+    const selectedUserRow = getCurrentlySelectedCandidate(usersSheet);
 
     const state = State
         .getState({
+            start: selectedUserRow,
             callback: sendout(usersSheet, covidStatsSheet, sandboxed)
         });
 
-    var candidate = getCandidateFromRow(usersSheet, state.start);
+    const candidate = getCandidateFromRow(usersSheet, selectedUserRow || state.start);
 
-    var response = ui.alert('Mail will be sent starting from ' + candidate.name + ', confirm?', ui.ButtonSet.YES_NO);
+    const response = ui.alert(`Starting from ${candidate.name}, state ${candidate.state}, confirm?`, ui.ButtonSet.YES_NO);
 
     if (response === ui.Button.YES) {
 
-        const quotaInfo = checkRemainingQuota();
+        const quotaInfo = checkRemainingQuota(state);
 
-        if (quotaInfo.status) {
+        const {
+            remaining,
+            status
+        } = quotaInfo;
 
-            const numSendable = `You will be able to send ${quotaInfo.remaining} emails`;
+        if (status) {
+
+            const pluralEmail = pluralizeCountable(remaining, "email");
+
+            const numSendable = `\n\nYou will be able to send ${pluralEmail}`;
+
+            const { 
+                previousFailures, 
+                previousSuccesses, 
+                lastTimeFailed, 
+                lastTimeSucceeded 
+            } = state;
+            
+            const pluralFailure = pluralizeCountable(previousFailures, "problem");
+            const pluralSuccess = pluralizeCountable(previousSuccesses, "email");
+
+            const lastError = lastTimeFailed ? `\nLast problem: ${new Date(lastTimeFailed).toLocaleString()} (${pluralFailure} found)` : "";
+
+            const lastSuccess = lastTimeSucceeded ? `\nLast success: ${new Date(lastTimeSucceeded).toLocaleString()} (${pluralSuccess} sent)` : "";
+
+            const lastRan = lastError || lastSuccess ? `\n${lastError}${lastSuccess}\n` : "\n";
 
             const shouldContinue = ui.alert(
                 `Your Daily Quota`,
-                `Daily quota remaining: ${quotaInfo.availablePercent}%.\n\n${numSendable}\n\nContinue?`,
+                `Daily quota remaining: ${quotaInfo.availablePercent}%.${numSendable}${lastRan}\nContinue?`,
                 ui.ButtonSet.YES_NO
             );
 
@@ -57,6 +83,22 @@ function doApprove(sandboxed = false) {
 }
 
 /**
+ * @summary gets row index if selected an email to start from
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet 
+ * @returns {(number | undefined)}
+ */
+const getCurrentlySelectedCandidate = (sheet) => {
+
+    const activeCell = sheet.getActiveCell();
+
+    const emailListColumn = 3;
+
+    if (activeCell.getColumn() === emailListColumn) {
+        return activeCell.getRow();
+    }
+};
+
+/**
  * @typedef {({
  *  availablePercent : number,
  *  status : boolean,
@@ -64,9 +106,10 @@ function doApprove(sandboxed = false) {
  * })} quotaResult
  * 
  * @summary checks remaining quota
+ * @param {State} state
  * @returns {quotaResult}
  */
-const checkRemainingQuota = () => {
+const checkRemainingQuota = (state) => {
 
     const quota = MailApp.getRemainingDailyQuota();
 
@@ -74,7 +117,7 @@ const checkRemainingQuota = () => {
         remaining: quota,
         status: quota > 0,
         get availablePercent() {
-            return parseInt((this.remaining / 2000) * 100);
+            return Math.round((this.remaining / 2000) * 100);
         }
     });
 };
