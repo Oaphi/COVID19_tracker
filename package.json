@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "COVID-19 mailer",
   "scripts": {
+    "document": "jsdoc -c docs/jsdoc.conf.json",
     "test": "mocha"
   },
   "keywords": [
