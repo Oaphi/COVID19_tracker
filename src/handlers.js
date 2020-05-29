@@ -258,3 +258,29 @@ const handleSandbox = (emails) => {
 
     ui.showModalDialog(output, "Sandbox");
 };
+
+/**
+ * @summary handles sendout errors
+ * @param {Error} error 
+ * @param {Candidate} candidate
+ * @returns {boolean}
+ */
+const handleError = (error, candidate) => {
+
+    const ui = SpreadsheetApp.getUi();
+
+    const { message } = error;
+
+    const {
+        email,
+        state
+    } = candidate;
+
+    const shouldContinue = ui.alert(
+        "Sendout error",
+        `Failed to send the data for ${state} to ${email}\n\nReason: ${message}`,
+        ui.ButtonSet.OK_CANCEL
+    );
+
+    return shouldContinue === ui.Button.CANCEL;
+};
