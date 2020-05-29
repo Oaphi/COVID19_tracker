@@ -28,9 +28,11 @@ function doApprove(sandboxed = false) {
 
         if (quotaInfo.status) {
 
+            const numSendable = `You will be able to send ${quotaInfo.remaining} emails`;
+
             const shouldContinue = ui.alert(
                 `Your Daily Quota`,
-                `Daily quota remaining: ${quotaInfo.availablePercent}%.\nContinue?`,
+                `Daily quota remaining: ${quotaInfo.availablePercent}%.\n\n${numSendable}\n\nContinue?`,
                 ui.ButtonSet.YES_NO
             );
 

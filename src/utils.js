@@ -102,9 +102,9 @@ function topercent(a) {
 
     if (a !== "+N/A%" && a !== "0%") {
 
-        const float = parseFloat(a);
+        let float = parseFloat(a);
 
-        a = float * 100;
+        float = float * 100;
 
         a = (float < 1 && float > -1 && float) ? 
             `${float.toFixed(2)}%` : 

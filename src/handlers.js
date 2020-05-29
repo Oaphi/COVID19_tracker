@@ -34,7 +34,7 @@ const updateSentStatus = ({
 };
 
 /**
- * 
+ * @summary gets total statistics by US
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet 
  * @returns {(string | number)[]}
  */
@@ -112,15 +112,27 @@ function handleApproval2(
     commonTemplate.Statee = state;
     commonTemplate.twitterLink = LoadTwitter(userStateData, formattedDate);
 
-    const countryTestsPercent1 = getOrInitProp(commonTemplateValues, "countryTestsPercent1", () => topercent(totalUS[24]));
+    const countryTestsPercent1 = getOrInitProp(
+        commonTemplateValues,
+        "countryTestsPercent1",
+        () => topercent(totalUS[24])
+    );
     commonTemplate.countryTES1val = GreenRed2(countryTestsPercent1)[1];
     commonTemplate.countryTES1clr = "color:" + GreenRed2(countryTestsPercent1)[0];
 
-    const countryTestsPercent2 = getOrInitProp(commonTemplateValues, "countryTestsPercent2", () => topercent(totalUS[26]));
+    const countryTestsPercent2 = getOrInitProp(
+        commonTemplateValues,
+        "countryTestsPercent2",
+        () => topercent(totalUS[26])
+    );
     commonTemplate.countryTES2val = GreenRed2(countryTestsPercent2)[1];
     commonTemplate.countryTES2clr = "color:" + GreenRed2(countryTestsPercent2)[0];
 
-    const countryInfectionsPercent1 = getOrInitProp(commonTemplateValues, "countryInfectionsPercent1", () => topercent(totalUS[4]));
+    const countryInfectionsPercent1 = getOrInitProp(
+        commonTemplateValues,
+        "countryInfectionsPercent1",
+        () => topercent(totalUS[4])
+    );
     commonTemplate.countryINF1val = RedGreen2(countryInfectionsPercent1)[1];
     commonTemplate.countryINF1clr = "color:" + RedGreen2(countryInfectionsPercent1)[0];
 
@@ -140,28 +152,21 @@ function handleApproval2(
     commonTemplate.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
     commonTemplate.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
 
-    const stateTestPercent1 = getOrInitProp(
-        commonTemplateValues,
-        "stateTestPercent1",
-        () => topercent(userStateData[24])
-    );
-    commonTemplate.stateTES1val = GreenRed2(stateTestPercent1)[1];
-    commonTemplate.stateTES1clr = "color:" + GreenRed2(stateTestPercent1)[0];
-
-    const stateTestPercent2 = getOrInitProp(
-        commonTemplateValues,
-        "stateTestPercent2",
-        () => topercent(userStateData[26])
-    );
-    commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
-    commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
-
     const stateInfectionsPercent1 = topercent(userStateData[4]);
     commonTemplate.stateINF1val = RedGreen2(stateInfectionsPercent1)[1];
     commonTemplate.stateINF1clr = "color:" + RedGreen2(stateInfectionsPercent1)[0];
 
-    commonTemplate.stateINF2val = RedGreen2(topercent(userStateData[6]))[1];
-    commonTemplate.stateINF2clr = "color:" + RedGreen2(topercent(userStateData[6]))[0];
+    const stateInfectionsPercent2 = topercent(userStateData[6]);
+    commonTemplate.stateINF2val = RedGreen2(stateInfectionsPercent2)[1];
+    commonTemplate.stateINF2clr = "color:" + RedGreen2(stateInfectionsPercent2)[0];
+
+    const stateTestPercent1 = topercent(userStateData[24]);
+    commonTemplate.stateTES1val = GreenRed2(stateTestPercent1)[1];
+    commonTemplate.stateTES1clr = "color:" + GreenRed2(stateTestPercent1)[0];
+
+    const stateTestPercent2 = topercent(userStateData[26]);
+    commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
+    commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
 
     commonTemplate.TESstatement = buildStatement(FullStatee, userStateData[37], userStateData[36], "tests", userStateData[32]);
     commonTemplate.INFstatement = buildStatement(FullStatee, userStateData[39], userStateData[38], "infections", userStateData[28]);
