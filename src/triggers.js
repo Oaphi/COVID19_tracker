@@ -11,6 +11,7 @@ function onOpen() {
         .addItem('Approve', 'doApprove')
         .addSeparator()
         .addItem("Sandbox", "sandboxApprove")
+        .addItem("Reset", "resetPersistedState")
         .addToUi();
 
     ui.createMenu('Refresh_Data')
