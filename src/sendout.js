@@ -28,7 +28,7 @@ const sendEmail = ({
         return true;
     }
     catch (error) {
-        console.log(`Failed to send email to ${to}:\n\n${error}`);
+        console.warn(`Failed to send email to ${to}:\n\n${error}`);
         return false;
     }
 
@@ -106,7 +106,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
             const { email, state, status } = candidate;
 
             if (!validForSending(email, state, status)) {
-                STATE.count();
+                STATE.incrementStartIfNoFailures();
                 continue;
             }
 
@@ -115,16 +115,30 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
             }
 
             try {
+
                 handleApproval2(candidate, approvalConfig, sandboxed);
+
+                rowIndicesSent.push(rowIndex);
+
+                STATE
+                    .countSucceeded()
+                    .incrementStartIfNoFailures();
+
             }
             catch (error) {
-                console.log(error);
-                STATE.save();
+
+                STATE
+                    .countFailed()
+                    .saveFailure();
+
+                const isCancelled = handleError(error, candidate);
+
+                if (isCancelled) {
+                    break;
+                }
             }
 
-            rowIndicesSent.push(rowIndex);
 
-            STATE.count();
         }
 
         if (sandboxed) {
