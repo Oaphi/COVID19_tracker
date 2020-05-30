@@ -247,3 +247,140 @@ function ordinal_suffix_of(i) {
 
     return i + "th";
 }
+
+/**
+ * @summary changes noun (countable) to plural form and prepends amount
+ * 
+ * @example
+ * 1,test -> 1 test
+ * 2,test -> 2 tests
+ * 21,test -> 21 tests
+ * 
+ * @param {number} amount
+ * @param {string} noun
+ * @returns {string}
+ */
+const pluralizeCountable = (amount, noun) => {
+
+    const normalized = noun.toLowerCase();
+
+    if (amount === 1) {
+        return `1 ${normalized}`;
+    }
+
+    const irregulars = {
+        "child": "children",
+        "goose": "geese",
+        "tooth": "teeth",
+        "foot": "feet",
+        "mous": "mice",
+        "person": "people"
+    };
+
+    const irregularPlural = irregulars[normalized];
+
+    if (irregularPlural) {
+        return `${amount} ${irregularPlural}`;
+    }
+
+    if (manWomanCase = normalized.match(/(\w*)(man|woman)$/)) {
+        return `${amount} ${manWomanCase[1]}${manWomanCase[2].replace("a", "e")}`;
+    }
+
+    const staySameExceptions = new Set(["sheep", "series", "species", "deer", "fish"]);
+    if (staySameExceptions.has(normalized)) {
+        return `${amount} ${normalized}`;
+    }
+
+    const wordBase = normalized.slice(0, -2);
+
+    const irregularEndingWithA = new Set(["phenomenon", "datum", "criterion"]);
+    if (irregularEndingWithA.has(normalized)) {
+        return `${amount} ${wordBase}a`;
+    }
+
+    const twoLastLetters = normalized.slice(-2);
+    const oneLastLetter = twoLastLetters.slice(-1);
+
+    const irregularEndingWithForFe = new Set(["roofs", "belief", "chef", "chief"]);
+    if (irregularEndingWithForFe.has(normalized)) {
+        return `${amount} ${normalized}s`;
+    }
+
+    if (/(?:f|fe)$/.test(noun)) {
+        return `${amount} ${normalized.replace(/(?:f|fe)$/, "ves")}`;
+    }
+
+    const twoLettersReplaceMap = {
+        "is": "es",
+        "us": "i"
+    };
+
+    const lastLettersReplace = twoLettersReplaceMap[twoLastLetters];
+    if (lastLettersReplace && wordBase.length > 1) {
+        return `${amount} ${wordBase}${lastLettersReplace}`;
+    }
+
+    const twoLettersAddMap = new Set(["ch", "ss", "sh"]);
+    if (twoLettersAddMap.has(twoLastLetters)) {
+        return `${amount} ${normalized}es`;
+    }
+
+    const oneLastLetterMap = new Set(["s", "x", "z"]);
+    if (oneLastLetterMap.has(oneLastLetter)) {
+        return `${amount} ${normalized}es`;
+    }
+
+    const consonants = new Set([
+        "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n",
+        "p", "q", "r", "s", "t", "v", "x", "z", "w", "y"
+    ]);
+
+    const isLetterBeforeLastConsonant = consonants.has(normalized.slice(-2, -1));
+
+    if (oneLastLetter === "o" && isLetterBeforeLastConsonant) {
+        const lastOexceptions = new Set(["photo", "buro", "piano", "halo"]);
+
+        return `${amount} ${normalized}${lastOexceptions.has(normalized) ? "s" : "es"}`;
+    }
+
+    if (oneLastLetter === "y" && isLetterBeforeLastConsonant) {
+        return `${amount} ${normalized.slice(0, -1)}ies`;
+    }
+
+    return `${amount} ${normalized}s`;
+};
+
+/**
+ * @summary converts object to query
+ * @param {object} json parameters
+ * @returns {string} query string
+ */
+function JSONtoQuery(json) {
+
+    /**
+     * @summary recursive parser
+     * @param {object} obj 
+     * @param {string} seq
+     * @returns {string[]}
+     */
+    const deep = (obj, seq) => {
+        const output = [];
+
+        for (const key in obj) {
+            if (typeof obj[key] === "object") {
+                output.push(
+                    deep(obj[key], `${seq ? seq + '[' : ''}${key}${seq ? ']' : ''}`)
+                );
+            } else if (obj[key] !== undefined) {
+                output.push(
+                    `${seq ? seq + '[' : ''}${key}${seq ? ']' : ''}=${obj[key]}`
+                );
+            }
+        }
+
+        return output.reduce((r, c) => r.concat(c), []);
+    };
+
+    return deep(json).join('&');
+}
