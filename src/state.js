@@ -1,34 +1,39 @@
 //no support for class props in GAS yet;
 const StateStatics = {
-    defStart : 2,
+    defStart: 2,
     defThreshold: 5,
 
     /** @type {State} */
-    initializedState : null
+    initializedState: null
 };
 
 var State = class {
 
     /**
      * @typedef {({
-     *  callback : function,
+     *  callback : function (State, number) : any,
      *  start : (number | undefined),
      *  storeName : (string | undefined),
      *  threshold : (number | undefined)
      * })} stateConfig
      * 
-     * @param {stateConfig} config 
+     * @param {stateConfig} arg0
      */
     constructor({
-        callback,
+        callback = (state) => state,
         start = StateStatics.defStart,
         storeName = "continuator",
         threshold = StateStatics.defThreshold
-    } = config) {
+    } = {}) {
 
         this.callback = callback;
 
         this.processed = 0;
+
+        this.previousFailures = 0;
+        this.previousSuccesses = 0;
+        this.succeeded = 0;
+        this.failed = 0;
 
         this.start = +start;
 
@@ -39,6 +44,8 @@ var State = class {
         this.storeName = storeName;
 
         this.startedAt = Date.now();
+        this.lastTimeFailed = 0;
+        this.lastTimeSucceeded = 0;
     }
 
     /**
@@ -69,9 +76,9 @@ var State = class {
 
         this.reset();
 
-        console.log("All finished");
+        console.log("All done, saving state");
 
-        return this;
+        return this.saveSuccess();
     }
 
     /**
@@ -79,6 +86,7 @@ var State = class {
      * @returns {boolean}
      */
     canContinue() {
+
         const {
             threshold,
             startedAt = Date.now()
@@ -91,42 +99,83 @@ var State = class {
 
     /**
      * @summary launches the execution if under threshold
+     * 
+     * @description
+     * When called, checks if can continue
+     *      if not
+     *          persists failure info and exits
+     *      else
+     *          runs callback
+     *          increments start on success
+     * 
      * @returns {State}
      */
     continue() {
 
         if (!this.canContinue()) {
 
-            this.save();
-
             console.log("Over the threshold, aborting");
 
-            this.reset();
-
-            return this;
+            return this.saveFailure();
         }
 
         const { start, callback } = this;
-
-        console.log({start});
 
         callback(this, start);
 
         return this;
     }
 
+    countFailed() {
+        this.failed += 1;
+        return this;
+    }
+
+    countSucceeded() {
+        this.succeeded += 1;
+        return this;
+    }
+
     /**
-     * @summary increments counter
-     * @param {number} step 
+     * @summary increments processed items counter
+     * @param {number} [step]
      * @returns {State}
      */
-    count(step = 1) {
-
-        this.start += step;
-
-        this.processed += 1;
-
+    countProcessed(step = 1) {
+        this.processed += step;
         return this;
+    }
+
+    /**
+     * @summary increments starting position only if never failed
+     * @param {number} [step]
+     * @returns {State}
+     */
+    incrementStartIfNoFailures(step = 1) {
+        this.failed || (this.start += step);
+        return this.countProcessed();
+    }
+
+    /**
+     * @summary persists failure info
+     * @returns {State}
+     */
+    saveFailure() {
+        this.lastTimeSucceeded = 0;
+        this.lastTimeFailed = Date.now();
+        console.log(`Saving failure at ${this.lastTimeFailed}`);
+        return this.save();
+    }
+
+    /**
+     * @summary persists success info
+     * @returns {State}
+     */
+    saveSuccess() {
+        this.lastTimeFailed = 0;
+        this.lastTimeSucceeded = Date.now();
+        console.log(`Saving success at ${this.lastTimeSucceeded}`);
+        return this.save();
     }
 
     /**
@@ -143,10 +192,17 @@ var State = class {
         const parsed = JSON.parse(saved);
 
         for (const key in parsed) {
+            const value = parsed[key];
+
+            //skip persisted start if user decided to start later
+            if(key === "start" && value < this[key] ) {
+                continue;
+            }
+
             this[key] = parsed[key];
         }
 
-        console.log(this);
+        console.log(`Loading state: ${JSON.stringify(this)}`);
 
         return this;
     }
@@ -161,11 +217,30 @@ var State = class {
 
         this.processed = 0;
 
+        this.initialStart = StateStatics.defStart;
         this.start = StateStatics.defStart;
 
-        this.threshold = StateStatics.defThreshold;
+        this.threshold = StateStatics.defThreshold * 6e4;
+
+        console.log(`Resetting state: ${JSON.stringify(this)}`);
 
         return this;
+    }
+
+    /**
+     * @summary resets all state data (including persisted)
+     * @returns {State}
+     */
+    fullReset() {
+
+        console.log(`Performing full state reset`);
+
+        this.reset();
+
+        this.lastTimeFailed = 0;
+        this.lastTimeSucceeded = 0;
+
+        return this.save();
     }
 
     /**
@@ -175,14 +250,22 @@ var State = class {
     save() {
         const store = PropertiesService.getScriptProperties();
 
-        const { 
-            storeName, 
-            start, 
-            threshold, 
-            timezone 
+        const {
+            failed,
+            succeeded,
+            storeName,
+            start,
+            lastTimeFailed,
+            lastTimeSucceeded,
+            threshold,
+            timezone
         } = this;
 
         const toSave = {
+            previousFailures: failed,
+            previousSuccesses: succeeded,
+            lastTimeFailed,
+            lastTimeSucceeded,
             start,
             threshold,
             timezone
@@ -190,9 +273,9 @@ var State = class {
 
         const prepared = JSON.stringify(toSave);
 
-        store.setProperty(storeName, prepared);
+        console.log(`Saving current state: ${prepared}`);
 
-        console.log(`Saved current state: ${prepared}`);
+        store.setProperty(storeName, prepared);
 
         return this;
     }
@@ -207,4 +290,13 @@ var State = class {
         return this;
     }
 
-}
+};
+
+/**
+ * @summary handles state reset
+ * @returns {void}
+ */
+const resetPersistedState = () => {
+    const state = new State();
+    state.fullReset();
+};
