@@ -67,7 +67,7 @@ function handleApproval2(
     {
         emails,
         commonTemplateValues,
-        commonTemplate = HtmlService.createTemplateFromFile('candidate-email2'),
+        commonTemplate,
         totalUS,
         covidDataByState,
         currentDate,
@@ -203,6 +203,8 @@ function handleApproval2(
 
     commonTemplate.countryDEA2val = RedGreen2(topercent(totalUS[16]))[1];
     commonTemplate.countryDEA2clr = "color:" + RedGreen2(topercent(totalUS[16]))[0];
+
+    commonTemplate.analyticsEmailOpen = createAnalyticsTag();
 
     var message = commonTemplate.evaluate().getContent();
 

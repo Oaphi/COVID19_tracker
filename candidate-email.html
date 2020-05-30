@@ -1,44 +1,68 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top">
 
-       <?!= include("page-css"); ?>
-       
-       <style>
+<head>
+  <base target="_top">
 
-td{
+  <?!= include("page-css"); ?>
 
-overflow:hidden;padding:2px 3px;vertical-align:bottom;border:1px solid rgb(204,204,204);
+  <style>
+    td {
 
-}
-th{
+      overflow: hidden;
+      padding: 2px 3px;
+      vertical-align: bottom;
+      border: 1px solid rgb(204, 204, 204);
 
-overflow:hidden;padding:2px 3px;vertical-align:bottom;border:1px solid rgb(204,204,204);
+    }
 
-}
-</style>
+    th {
+
+      overflow: hidden;
+      padding: 2px 3px;
+      vertical-align: bottom;
+      border: 1px solid rgb(204, 204, 204);
+
+    }
+  </style>
 
 
-  </head>
-  <body>
- <div> <font size="5" style="font-size:small;font-family: Arial;">
-<p>The numbers we use for these reports are provided by <a href='https://covidtracking.com/data'>The COVID Tracking Project</a>, an organization that collects data from every U.S. state on a daily basis. Kansas and Texas were the only states that did not report today.<p>
-<p>U.S. totals to date: 13,056,206 tests, 1,567,427 infections, and 88,985 deaths.<p>
-<p>These are <?= FullStatee ?>'s officially reported numbers for the 24-hour period ending at 5:30pm EST today:<p>
-</font> </div>
-   
-<?!= tables; ?>
-    
+</head>
 
-    
-  
-    <div> <font size="5" style="font-size:small;font-family: Arial;">
-     <p><b>New:</b> <a href="<?= twitterLink; ?>">tweet a summary</a> of today's numbers for <?= FullStatee ?> </font><p><br> <br>
-     
-    
-   <p> <font size="5" style="font-size:x-small;font-family: Arial;">If a friend forwarded you this email, feel free to subscribe to daily reports for any U.S. state at <a href='covidping.com'>covidping.com</a>. We try our best to make this daily email useful for our readers, but we'd fully understand if you choose to <a href="mailto:hi@covidping.com?subject=Unsubscribe%20me%20from%20<?= FullStatee ?>'s%20reports%20please">unsubscribe</a> at any time.</font> 
-   
-   </div>
-  </body>
+<body>
+  <div>
+    <font size="5" style="font-size:small;font-family: Arial;">
+      <p>The numbers we use for these reports are provided by <a href='https://covidtracking.com/data'>The COVID
+          Tracking Project</a>, an organization that collects data from every U.S. state on a daily basis. Kansas and
+        Texas were the only states that did not report today.
+      <p>
+      <p>U.S. totals to date: 13,056,206 tests, 1,567,427 infections, and 88,985 deaths.
+      <p>
+      <p>These are <?= FullStatee ?>'s officially reported numbers for the 24-hour period ending at 5:30pm EST today:
+      <p>
+    </font>
+  </div>
+
+  <?!= tables; ?>
+
+
+
+
+  <div>
+    <font size="5" style="font-size:small;font-family: Arial;">
+      <p><b>New:</b> <a href="<?= twitterLink; ?>">tweet a summary</a> of today's numbers for <?= FullStatee ?>
+    </font>
+    <p><br> <br>
+
+
+    <p>
+      <font size="5" style="font-size:x-small;font-family: Arial;">If a friend forwarded you this email, feel free to
+        subscribe to daily reports for any U.S. state at <a href='covidping.com'>covidping.com</a>. We try our best to
+        make this daily email useful for our readers, but we'd fully understand if you choose to <a
+          href="mailto:hi@covidping.com?subject=Unsubscribe%20me%20from%20<?= FullStatee ?>'s%20reports%20please">unsubscribe</a>
+        at any time.</font>
+
+  </div>
+</body>
+
 </html>

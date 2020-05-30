@@ -53,9 +53,9 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
     /**
      * @param {State} STATE
-     * @param {number} startAt
+     * @param {number} startRow
      */
-    (STATE, startAt) => {
+    (STATE, startRow) => {
 
         const START_COL = 1, END_COL = 7;
 
@@ -72,9 +72,10 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
                 covidDataByState[stateData[1]] = stateData;
             });
 
-        const records = sheet.getRange(startAt, START_COL, sheet.getLastRow(), END_COL).getValues();
+        const records = sheet.getRange(startRow, START_COL, sheet.getLastRow(), END_COL).getValues();
 
         const candidates = getCandidates({
+            startRow,
             records,
             sheet
         });
@@ -98,7 +99,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
             totalUS
         };
 
-        let rowIndex = startAt - 1;
+        let rowIndex = startRow - 1;
 
         for (const candidate of candidates) {
             rowIndex++;

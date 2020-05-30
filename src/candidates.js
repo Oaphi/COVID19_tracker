@@ -1,5 +1,7 @@
 /**
  * @typedef {({
+ *  startRow : (number | undefined),
+ *  sheet : (GoogleAppsScript.Spreadsheet.Sheet | undefined),
  *  records : (any[][])
  * })} getCandidatesConfig
  * 
@@ -7,12 +9,24 @@
  * @returns {Candidate[]}
  */
 function getCandidates({
-  records
+  sheet,
+  records,
+  startRow
 } = config) {
 
-  return records.map(record => {
+  const uuids = [];
 
-    const [id, subscribed, email, state, status] = record;
+  const candidates = records.map(record => {
+
+    const [
+      id,
+      subscribed,
+      email,
+      state,
+      status
+    ] = record;
+    
+    getUuidUntilUnique({ id, uuids });
 
     const [name] = email.split("@");
 
@@ -35,6 +49,11 @@ function getCandidates({
     });
   });
 
+  const UUID_COLUMN = 1;
+  const uuidRange = sheet.getRange(startRow, UUID_COLUMN, records.length, 1);
+  uuidRange.setValues(uuids.map(id => [id]));
+
+  return candidates;
 }
 
 /**
@@ -50,16 +69,17 @@ function getCandidates({
  * })} Candidate
  *
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
- * @param {number} row
+ * @param {number} startRow
  * @returns {Candidate}
  */
-function getCandidateFromRow(sheet, row) {
+function getCandidateFromRow(sheet, startRow) {
 
-  const values = sheet.getRange(row, 1, 1, 7).getValues();
+  const records = sheet.getRange(startRow, 1, 1, 7).getValues();
 
   return getCandidates({
-    sheet, 
-    records: values
+    startRow,
+    sheet,
+    records
   })[0];
 }
 
