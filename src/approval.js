@@ -7,9 +7,9 @@ function doApprove(sandboxed = false) {
 
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
-    const covidStatsSheet = spreadsheet.getSheetByName("Covid19");
+    const covidStatsSheet = spreadsheet.getSheetByName(CONFIG.statsShName);
 
-    const usersSheet = spreadsheet.getSheetByName("Users");
+    const usersSheet = spreadsheet.getSheetByName(CONFIG.userShName);
 
     const ui = SpreadsheetApp.getUi();
 
@@ -40,13 +40,13 @@ function doApprove(sandboxed = false) {
 
             const numSendable = `\n\nYou will be able to send ${pluralEmail}`;
 
-            const { 
-                previousFailures, 
-                previousSuccesses, 
-                lastTimeFailed, 
-                lastTimeSucceeded 
+            const {
+                previousFailures,
+                previousSuccesses,
+                lastTimeFailed,
+                lastTimeSucceeded
             } = state;
-            
+
             const pluralFailure = pluralizeCountable(previousFailures, "problem");
             const pluralSuccess = pluralizeCountable(previousSuccesses, "email");
 
@@ -62,7 +62,7 @@ function doApprove(sandboxed = false) {
                 ui.ButtonSet.YES_NO
             );
 
-            if(shouldContinue === ui.Button.NO) {
+            if (shouldContinue === ui.Button.NO) {
                 console.log("Sendout cancelled");
                 return false;
             }
