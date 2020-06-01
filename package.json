@@ -21,5 +21,9 @@
     "jsdoc": "^3.6.4",
     "jshint": "^2.11.1",
     "mocha": "^7.2.0"
+  },
+  "repository": {
+    "type": "GIT",
+    "url": "https://github.com/Oaphi/COVID19_tracker.git"
   }
 }

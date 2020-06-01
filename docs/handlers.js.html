@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: handlers.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: handlers.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * @typedef {({
  *  rows : number[],
  *  sheet : (GoogleAppsScript.Spreadsheet.Spreadsheet | undefined),
@@ -39,14 +67,14 @@ const updateSentStatus = ({
  * @returns {(string | number)[]}
  */
 const getTotalByUS = (sheet) => {
-    return (sheet.getRange(2, 1, 1, sheet.getLastColumn()).getValues())[0];
+    return (sheet.getRange(2, 1, 1, 43).getValues())[0];
 };
 
 /**
  * @typedef {({
  *  commonTemplate : (GoogleAppsScript.HTML.HtmlTemplate | undefined),
- *  commonTemplateValues : Object.<string, string>,
- *  covidDataByState : Object.<string, (number | string)[]>,
+ *  commonTemplateValues : Object.&lt;string, string>,
+ *  covidDataByState : Object.&lt;string, (number | string)[]>,
  *  currentDate : Date,
  *  currentWeekday : string,
  *  emails : object[],
@@ -155,10 +183,10 @@ function handleApproval2(
     const countryRatioInfectedToTests = getOrInitProp(
         commonTemplateValues,
         "countryRatioInfectedToTests",
-        () => topercent(totalUS[43])
+        () => totalUS[42]
     );
     commonTemplate.countryRatioInfectedToTests = countryRatioInfectedToTests;
-    
+
     const countryDeathsPercent2 = getOrInitProp(
         commonTemplateValues,
         "countryDeathsPercent2",
@@ -217,13 +245,13 @@ function handleApproval2(
     commonTemplate.stateDEA2val = RedGreen2(stateDeathspercent2)[1];
     commonTemplate.stateDEA2clr = "color:" + RedGreen2(stateDeathspercent2)[0];
 
-    const stateRatioInfectedToTests = userStateData[43];
-    commonTemplate.stateRatioInfectedToTests = topercent(stateRatioInfectedToTests);
+    const stateRatioInfectedToTests = userStateData[42];
+    commonTemplate.stateRatioInfectedToTests = stateRatioInfectedToTests;
 
     const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
 
     const localeDate = currentDate.toLocaleDateString();
-
+    
     commonTemplate.analyticsEmailOpen = trackEmailOpen(sandboxed, candidate, {
         el: FullStatee,
         ev: currentDate.valueOf(),
@@ -262,7 +290,7 @@ const handleSandbox = (emails) => {
 
     const html = emails.map(email => {
         const { to, subject, message } = email;
-        return `<h2>To: ${to}</h2><h3>Subject: ${subject}</h3>${message}`;
+        return `&lt;h2>To: ${to}&lt;/h2>&lt;h3>Subject: ${subject}&lt;/h3>${message}`;
     }).join("");
 
     const ui = SpreadsheetApp.getUi();
@@ -307,4 +335,26 @@ const handleError = (error, candidate) => {
     );
 
     return shouldContinue === ui.Button.CANCEL;
-};
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 16:42:24 GMT+0300 (Moscow Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

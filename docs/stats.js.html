@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: stats.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: stats.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @typedef {({
+ *  sheet : GoogleAppsScript.Spreadsheet.Sheet
+ * })} statsConfig
+ * 
+ * @param {statsConfig} config 
+ * 
+ * @returns {string[][]}
+ */
+const infectionsByTestsByState = (
+    {
+        sheet
+    } = {}
+) => {
+
+    const startRow = 2, startCol = 1, testColIndex = 17;
+
+    const statsRows = sheet.getRange(
+        startRow,
+        startCol,
+        sheet.getLastRow(),
+        testColIndex + 1
+    );
+
+    const statsValues = statsRows.getValues();
+
+    const currDateValue = new Date(new Date().toISOString().slice(0, 10)).valueOf();
+
+    const recents = {};
+
+    const data = statsValues
+        .reduce((acc, curr) => {
+
+            /** @type {[ number, string, number ]} */
+            const [date, state, infections] = curr;
+
+            const formattedToUTCdateString = date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+
+            const parsedDateValue = new Date(formattedToUTCdateString).valueOf();
+
+            if ((recents[state] || 0) &lt; parsedDateValue) {
+
+                recents[state] = parsedDateValue;
+
+                const tests = curr[testColIndex];
+                const ratio = infections / tests;
+                acc.set(state, ratio);
+            }
+
+            return acc;
+
+        }, new Map());
+
+    return [...data.values()].map(val => [val]);
+};
+
+/**
+ * @summary updates infections to tests ratio
+ * @returns {boolean}
+ */
+const updateInfectsionsByTests = () => {
+
+    const infectToTests7DayColNum = 44;
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    const statesSheet = ss.getSheetByName(CONFIG.rawStateStatsShName);
+
+    try {
+        const statesValues = infectionsByTestsByState({ sheet: statesSheet });
+
+        const covidSheet = ss.getSheetByName(CONFIG.statsShName);
+
+        covidSheet.getRange(3, infectToTests7DayColNum, statesValues.length, 1).setValues(statesValues);
+    } catch (error) {
+        console.warn(error);
+        return false;
+    }
+
+    return true;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 16:42:24 GMT+0300 (Moscow Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

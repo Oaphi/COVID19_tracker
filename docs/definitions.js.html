@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: definitions.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: definitions.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @typedef {object} TemplateConfig
+ * @property {string} analyticsEmailOpen
+ * @property {string} countryDEA0
+ * @property {string} countryINF0
+ * @property {string} countryTES0
+ * @property {string} countryDEA1cmp
+ * @property {string} countryINF1cmp
+ * @property {string} countryINF2cmp
+ * @property {string} countryTES1cmp
+ * @property {string} countryTES2cmp
+ * @property {string} countryDEA1clr
+ * @property {string} countryDEA2clr
+ * @property {string} countryINF1clr
+ * @property {string} countryINF2clr
+ * @property {string} countryTES1clr
+ * @property {string} countryTES2clr
+ * @property {string} countryDEA1val
+ * @property {string} countryDEA2val
+ * @property {string} countryINF1val
+ * @property {string} countryINF2val
+ * @property {number} countryRatioInfectedToTests infected to tests ratio last 7 days (by country)
+ * @property {string} countryTES1val
+ * @property {string} countryTES2val
+ * @property {string} countryTOTdea total deaths by country
+ * @property {string} countryTOTinf total infections by country
+ * @property {string} countryTOTtes total tests by country
+ * @property {string} DEAstatement death rate statement (&lt;State> was &lt;position> today)
+ * @property {string} INFstatement infections rate statement (&lt;State> was &lt;position> today)
+ * @property {string} TESstatement tests rate statement (&lt;State> was &lt;position> today)
+ * @property {(string | number)} emailId
+ * @property {string} fulldate weekday longname (e.g. Monday)
+ * @property {string} FullStatee full state name
+ * @property {string} stateDEA0
+ * @property {string} stateDEA2
+ * @property {string} stateDEA1clr
+ * @property {string} stateDEA2clr
+ * @property {string} stateDEA1cmp
+ * @property {string} stateDEA2cmp
+ * @property {string} stateDEA1val
+ * @property {string} stateDEA2val
+ * @property {string} stateINF0
+ * @property {string} stateINF2
+ * @property {string} stateINF1clr
+ * @property {string} stateINF2clr
+ * @property {string} stateINF1cmp
+ * @property {string} stateINF2cmp
+ * @property {string} stateINF1val
+ * @property {string} stateINF2val
+ * @property {number} stateRatioInfectedToTests infected to tests ratio last 7 days (by state)
+ * @property {string} stateTES0
+ * @property {string} stateTES2
+ * @property {string} stateTES1clr
+ * @property {string} stateTES2clr
+ * @property {string} stateTES1cmp
+ * @property {string} stateTES2cmp
+ * @property {string} stateTES1val
+ * @property {string} stateTES2val
+ * @property {string} Statee state code (e.g. OK)
+ * @property {string} twitterLink link to twitter post
+ */</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 16:42:24 GMT+0300 (Moscow Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

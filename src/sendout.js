@@ -63,10 +63,8 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
         const covidDataByState = {};
 
-        const numUsefulColumns = 42;
-
         covidStatsSheet
-            .getRange(3, 1, covidStatsSheet.getLastRow(), numUsefulColumns)
+            .getRange(3, 1, covidStatsSheet.getLastRow(), covidStatsSheet.getLastColumn())
             .getValues()
             .forEach((stateData) => {
                 covidDataByState[stateData[1]] = stateData;
