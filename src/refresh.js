@@ -3,98 +3,107 @@
  * @returns {void}
  */
 function Covid19Refresh() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    var sheet1 = ss.getSheetByName("States");
-    var sheet2 = ss.getSheetByName("Country");
+    getOrInstallInfectionsByTests();
 
-    var Covid19sh = ss.getSheetByName("Covid19");
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    var sheet1 = ss.getSheetByName(CONFIG.rawStateStatsShName);
+    var sheet2 = ss.getSheetByName(CONFIG.rawCountryStatsShName);
+    var Covid19sh = ss.getSheetByName(CONFIG.statsShName);
 
     var data1 = fetchAndParseContent("https://covidtracking.com/api/states/daily");
     
-    Logger.log(data1[0]);
+    console.log(data1[0]);
 
-    var inputdata1 = [];
+    var inputdata1 = data1.map(data => {
 
-    for (let i = 0; i < data1.length; i++) {
-        let inputrow = [
-            data1[i].date,
-            data1[i].state,
-            data1[i].positive,
-            data1[i].negative,
-            data1[i].pending,
-            data1[i].hospitalizedCurrently,
-            data1[i].hospitalizedCumulative,
-            data1[i].inIcuCurrently,
-            data1[i].inIcuCumulative,
-            data1[i].onVentilatorCurrently,
-            data1[i].onVentilatorCumulative,
-            data1[i].recovered,
-            data1[i].hash,
-            data1[i].dateChecked,
-            data1[i].death,
-            data1[i].hospitalized,
-            data1[i].total,
-            data1[i].totalTestResults,
-            data1[i].posNeg,
-            data1[i].fips,
-            data1[i].deathIncrease,
-            data1[i].hospitalizedIncrease,
-            data1[i].negativeIncrease,
-            data1[i].positiveIncrease,
-            data1[i].totalTestResultsIncrease
+        const { date, state, positive } = data;
+
+        const inputrow = [
+            date,
+            state,
+            positive,
+            data.negative,
+            data.pending,
+            data.hospitalizedCurrently,
+            data.hospitalizedCumulative,
+            data.inIcuCurrently,
+            data.inIcuCumulative,
+            data.onVentilatorCurrently,
+            data.onVentilatorCumulative,
+            data.recovered,
+            data.hash,
+            data.dateChecked,
+            data.death,
+            data.hospitalized,
+            data.total,
+            data.totalTestResults,
+            data.posNeg,
+            data.fips,
+            data.deathIncrease,
+            data.hospitalizedIncrease,
+            data.negativeIncrease,
+            data.positiveIncrease,
+            data.totalTestResultsIncrease
         ];
 
         for (let ii = 0; ii < 5; ii++) {
-            if (inputrow[ii + 20] < 0) {
-                inputrow[ii + 20] = 0;
+            const offset20 = ii + 20;
+
+            if (inputrow[offset20] < 0) {
+                inputrow[offset20] = 0;
             }
         }
 
-        inputdata1.push(inputrow);
-    }
+        return inputrow;
+    });
 
     var data2 = fetchAndParseContent("https://covidtracking.com/api/us/daily");
     
-    Logger.log(data2[0]);
+    console.log(data2[0]);
 
-    var inputdata2 = [];
+    var inputdata2 = data2.map(data => {
 
-    for (let i = 0; i < data2.length; i++) {
+        const { date, states, positive, negative } = data;
+
         let inputrow = [
-            data2[i].date,
-            data2[i].states,
-            data2[i].positive,
-            data2[i].negative,
-            data2[i].pending,
-            data2[i].hospitalizedCurrently,
-            data2[i].hospitalizedCumulative,
-            data2[i].inIcuCurrently,
-            data2[i].inIcuCumulative,
-            data2[i].onVentilatorCurrently,
-            data2[i].onVentilatorCumulative,
-            data2[i].recovered,
-            data2[i].hash,
-            data2[i].dateChecked,
-            data2[i].death,
-            data2[i].hospitalized,
-            data2[i].total,
-            data2[i].totalTestResults,
-            data2[i].posNeg,
-            data2[i].deathIncrease,
-            data2[i].hospitalizedIncrease,
-            data2[i].negativeIncrease,
-            data2[i].positiveIncrease,
-            data2[i].totalTestResultsIncrease
+            date,
+            states,
+            positive,
+            negative,
+            data.pending,
+            data.hospitalizedCurrently,
+            data.hospitalizedCumulative,
+            data.inIcuCurrently,
+            data.inIcuCumulative,
+            data.onVentilatorCurrently,
+            data.onVentilatorCumulative,
+            data.recovered,
+            data.hash,
+            data.dateChecked,
+            data.death,
+            data.hospitalized,
+            data.total,
+            data.totalTestResults,
+            data.posNeg,
+            data.deathIncrease,
+            data.hospitalizedIncrease,
+            data.negativeIncrease,
+            data.positiveIncrease,
+            data.totalTestResultsIncrease
         ];
 
         for (let ii = 0; ii < 5; ii++) {
-            if (inputrow[ii + 19] < 0) {
-                inputrow[ii + 19] = 0;
+            const offset19 = ii + 19;
+
+            if (inputrow[offset19] < 0) {
+                inputrow[offset19] = 0;
             }
         }
-        inputdata2.push(inputrow);
-    }
+        
+        return inputrow;
+    });
 
     var range1 = sheet1.getRange(2, 1, data1.length, 25);
     range1.setValues(inputdata1);
@@ -109,6 +118,8 @@ function Covid19Refresh() {
  * @returns {void}
  */
 function Covid19Refresh_BACKUP() {
+
+    getOrInstallInfectionsByTests();
 
     var aUrl = "https://covidtracking.com/api/states/daily";
     var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1Jmy7IqSugeZnHq5oAZV4Mq9w6UfrCbQ9PaLziseG2ME/edit?usp=sharing");
