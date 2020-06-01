@@ -19,7 +19,7 @@
  * @property {string} countryDEA2val
  * @property {string} countryINF1val
  * @property {string} countryINF2val
- * @property {number} countryRatioInfectedToTests infected to tests ratio last 7 days (by country)
+ * @property {string} countryRatioInfectedToTests infected to tests ratio last 7 days (by country)
  * @property {string} countryTES1val
  * @property {string} countryTES2val
  * @property {string} countryTOTdea total deaths by country
@@ -47,7 +47,8 @@
  * @property {string} stateINF2cmp
  * @property {string} stateINF1val
  * @property {string} stateINF2val
- * @property {number} stateRatioInfectedToTests infected to tests ratio last 7 days (by state)
+ * @property {string} stateInfectedToTestedRank infected to tests current rank (by state)
+ * @property {string} stateRatioInfectedToTests infected to tests ratio last 7 days (by state)
  * @property {string} stateTES0
  * @property {string} stateTES2
  * @property {string} stateTES1clr

@@ -152,13 +152,6 @@ function handleApproval2(
     commonTemplate.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
     commonTemplate.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
 
-    const countryRatioInfectedToTests = getOrInitProp(
-        commonTemplateValues,
-        "countryRatioInfectedToTests",
-        () => topercent(totalUS[43])
-    );
-    commonTemplate.countryRatioInfectedToTests = countryRatioInfectedToTests;
-    
     const countryDeathsPercent2 = getOrInitProp(
         commonTemplateValues,
         "countryDeathsPercent2",
@@ -168,6 +161,13 @@ function handleApproval2(
     );
     commonTemplate.countryDEA2val = countryDeathsPercent2[1];
     commonTemplate.countryDEA2clr = "color:" + countryDeathsPercent2[0];
+
+    const countryRatioInfectedToTests = getOrInitProp(
+        commonTemplateValues,
+        "countryRatioInfectedToTests",
+        () => topercent(totalUS[43])
+    );
+    commonTemplate.countryRatioInfectedToTests = countryRatioInfectedToTests;
 
     const stateInfectionsPercent1 = topercent(userStateData[4]);
     commonTemplate.stateINF1val = RedGreen2(stateInfectionsPercent1)[1];
@@ -219,6 +219,9 @@ function handleApproval2(
 
     const stateRatioInfectedToTests = userStateData[43];
     commonTemplate.stateRatioInfectedToTests = topercent(stateRatioInfectedToTests);
+
+    const stateInfectedToTestedRank = userStateData[44];
+    commonTemplate.stateInfectedToTestedRank = topercent(stateInfectedToTestedRank);
 
     const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
 
