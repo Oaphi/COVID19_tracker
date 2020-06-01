@@ -200,15 +200,27 @@ function handleApproval2(
     commonTemplate.stateDEA2val = RedGreen2(stateDeathspercent2)[1];
     commonTemplate.stateDEA2clr = "color:" + RedGreen2(stateDeathspercent2)[0];
 
+    const countryDeathsPercent2 = getOrInitProp(
+        commonTemplateValues,
+        "countryDeathsPercent2",
+        () => RedGreen2(
+            topercent(totalUS[16])
+        )
+    );
+    commonTemplate.countryDEA2val = countryDeathsPercent2[1];
+    commonTemplate.countryDEA2clr = "color:" + countryDeathsPercent2[0];
 
-    commonTemplate.countryDEA2val = RedGreen2(topercent(totalUS[16]))[1];
-    commonTemplate.countryDEA2clr = "color:" + RedGreen2(topercent(totalUS[16]))[0];
+    const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
 
-    commonTemplate.analyticsEmailOpen = createAnalyticsTag();
+    const localeDate = currentDate.toLocaleDateString();
+    
+    commonTemplate.analyticsEmailOpen = trackEmailOpen(sandboxed, candidate, {
+        el: FullStatee,
+        ev: currentDate.valueOf(),
+        dp: `/email/${state}/${localeDate}`
+    });
 
     var message = commonTemplate.evaluate().getContent();
-
-    var subject = FullStatee + " COVID-19 daily report: " + currentWeekday + formattedDate;
 
     if (sandboxed) {
         emails.push({
