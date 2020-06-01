@@ -221,7 +221,7 @@ function handleApproval2(
     commonTemplate.stateRatioInfectedToTests = topercent(stateRatioInfectedToTests);
 
     const stateInfectedToTestedRank = userStateData[44];
-    commonTemplate.stateInfectedToTestedRank = topercent(stateInfectedToTestedRank);
+    commonTemplate.stateInfectedToTestedRank = stateInfectedToTestedRank;
 
     const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
 
