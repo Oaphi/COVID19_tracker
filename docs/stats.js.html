@@ -41,7 +41,7 @@ const infectionsByTestsByState = (
     } = {}
 ) => {
 
-    const startRow = 2, startCol = 1, testColIndex = 17;
+    const startRow = 2, startCol = 1, infectsColIndex = 23, testColIndex = 24;
 
     const statsRows = sheet.getRange(
         startRow,
@@ -54,32 +54,101 @@ const infectionsByTestsByState = (
 
     const currDateValue = new Date(new Date().toISOString().slice(0, 10)).valueOf();
 
-    const recents = {};
-
     const data = statsValues
         .reduce((acc, curr) => {
 
             /** @type {[ number, string, number ]} */
-            const [date, state, infections] = curr;
+            const [date, state] = curr;
 
             const formattedToUTCdateString = date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
 
             const parsedDateValue = new Date(formattedToUTCdateString).valueOf();
 
-            if ((recents[state] || 0) &lt; parsedDateValue) {
+            const sevenDaysAgo = (currDateValue - 7 * 864e5);
 
-                recents[state] = parsedDateValue;
+            if (parsedDateValue >= sevenDaysAgo) {
 
+                const infections = curr[infectsColIndex];
                 const tests = curr[testColIndex];
-                const ratio = infections / tests;
-                acc.set(state, ratio);
+
+                const [
+                    prevInfects = 0,
+                    prevTests = 0
+                ] = acc.get(state) || [];
+
+                acc.set(state, [prevInfects + infections, prevTests + tests]);
             }
 
             return acc;
 
         }, new Map());
 
-    return [...data.values()].map(val => [val]);
+    return [...data.values()]
+        .map(val => {
+            const [infections, tests] = val;
+            return [tests !== 0 ? infections / tests : 0];
+        });
+};
+
+/**
+ * @param {statsConfig} config
+ * @returns {string[][]}
+ */
+const infectionsByTestsByCountry = ({
+    sheet
+} = {}) => {
+
+    const startRow = 2, startCol = 1, infectsColIndex = 22, testColIndex = 23;
+
+    const statsRows = sheet.getRange(
+        startRow,
+        startCol,
+        sheet.getLastRow(),
+        testColIndex + 1
+    );
+
+    const statsValues = statsRows.getValues();
+
+    const currDateValue = new Date(new Date().toISOString().slice(0, 10)).valueOf();
+
+    const data = statsValues
+        .reduce((acc, curr) => {
+
+            /** @type {[ number, string, number ]} */
+            const [date] = curr;
+
+            const formattedToUTCdateString = date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+
+            const parsedDateValue = new Date(formattedToUTCdateString).valueOf();
+
+            const sevenDaysAgo = (currDateValue - 7 * 864e5);
+
+            if (parsedDateValue >= sevenDaysAgo) {
+
+                const infections = curr[infectsColIndex];
+                const tests = curr[testColIndex];
+
+                const [
+                    prevInfects = 0,
+                    prevTests = 0
+                ] = acc;
+
+                return [
+                    prevInfects + infections,
+                    prevTests + tests
+                ];
+            }
+
+            return acc;
+
+        }, []);
+    
+    return [data]
+        .map(val => {
+            const [infections, tests] = val;
+            return [tests !== 0 ? infections / tests : 0];
+        });
+
 };
 
 /**
@@ -92,14 +161,26 @@ const updateInfectsionsByTests = () => {
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
+    const countrySheet = ss.getSheetByName(CONFIG.rawCountryStatsShName);
+
     const statesSheet = ss.getSheetByName(CONFIG.rawStateStatsShName);
 
     try {
+
+        const countryValues = infectionsByTestsByCountry({ sheet: countrySheet });
+
         const statesValues = infectionsByTestsByState({ sheet: statesSheet });
 
         const covidSheet = ss.getSheetByName(CONFIG.statsShName);
 
-        covidSheet.getRange(3, infectToTests7DayColNum, statesValues.length, 1).setValues(statesValues);
+        covidSheet
+            .getRange(2, infectToTests7DayColNum, 1, 1)
+            .setValues(countryValues);
+
+        covidSheet
+            .getRange(3, infectToTests7DayColNum, statesValues.length, 1)
+            .setValues(statesValues);
+
     } catch (error) {
         console.warn(error);
         return false;
@@ -116,13 +197,13 @@ const updateInfectsionsByTests = () => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildRatioStatement">buildRatioStatement</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#infectionsByTestsByCountry">infectionsByTestsByCountry</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#promptSendoutStats">promptSendoutStats</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#sentenceCase">sentenceCase</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 16:42:24 GMT+0300 (Moscow Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Jun 02 2020 13:26:59 GMT+0300 (Moscow Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

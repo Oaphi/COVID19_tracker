@@ -67,7 +67,7 @@ const updateSentStatus = ({
  * @returns {(string | number)[]}
  */
 const getTotalByUS = (sheet) => {
-    return (sheet.getRange(2, 1, 1, 43).getValues())[0];
+    return (sheet.getRange(2, 1, 1, sheet.getLastColumn()).getValues())[0];
 };
 
 /**
@@ -180,13 +180,6 @@ function handleApproval2(
     commonTemplate.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
     commonTemplate.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
 
-    const countryRatioInfectedToTests = getOrInitProp(
-        commonTemplateValues,
-        "countryRatioInfectedToTests",
-        () => totalUS[42]
-    );
-    commonTemplate.countryRatioInfectedToTests = countryRatioInfectedToTests;
-
     const countryDeathsPercent2 = getOrInitProp(
         commonTemplateValues,
         "countryDeathsPercent2",
@@ -196,6 +189,13 @@ function handleApproval2(
     );
     commonTemplate.countryDEA2val = countryDeathsPercent2[1];
     commonTemplate.countryDEA2clr = "color:" + countryDeathsPercent2[0];
+
+    const countryRatioInfectedToTests = getOrInitProp(
+        commonTemplateValues,
+        "countryRatioInfectedToTests",
+        () => topercent(totalUS[43])
+    );
+    commonTemplate.countryRatioInfectedToTests = countryRatioInfectedToTests;
 
     const stateInfectionsPercent1 = topercent(userStateData[4]);
     commonTemplate.stateINF1val = RedGreen2(stateInfectionsPercent1)[1];
@@ -213,9 +213,29 @@ function handleApproval2(
     commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
     commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
 
-    commonTemplate.TESstatement = buildStatement(FullStatee, userStateData[37], userStateData[36], "tests", userStateData[32]);
-    commonTemplate.INFstatement = buildStatement(FullStatee, userStateData[39], userStateData[38], "infections", userStateData[28]);
-    commonTemplate.DEAstatement = buildStatement(FullStatee, userStateData[41], userStateData[40], "deaths", userStateData[30]);
+    commonTemplate.TESstatement = buildStatement(
+        state,
+        userStateData[37],
+        userStateData[36],
+        "tests",
+        userStateData[32]
+    );
+
+    commonTemplate.INFstatement = buildStatement(
+        state,
+        userStateData[39],
+        userStateData[38],
+        "positive tests",
+        userStateData[28]
+    );
+
+    commonTemplate.DEAstatement = buildStatement(
+        state,
+        userStateData[41],
+        userStateData[40],
+        "deaths",
+        userStateData[30]
+    );
 
     commonTemplate.stateINF0 = addCommas(userStateData[3]);
 
@@ -245,13 +265,22 @@ function handleApproval2(
     commonTemplate.stateDEA2val = RedGreen2(stateDeathspercent2)[1];
     commonTemplate.stateDEA2clr = "color:" + RedGreen2(stateDeathspercent2)[0];
 
-    const stateRatioInfectedToTests = userStateData[42];
-    commonTemplate.stateRatioInfectedToTests = stateRatioInfectedToTests;
+    const stateRatioInfectedToTests = userStateData[43];
+    commonTemplate.stateRatioInfectedToTests = topercent(stateRatioInfectedToTests);
 
+    const stateInfectedToTestedRank = userStateData[44];
+    commonTemplate.stateInfectedToTestedRank = stateInfectedToTestedRank;
+
+    commonTemplate.INF2statement = buildRatioStatement(
+        state,
+        stateInfectedToTestedRank,
+        commonTemplate.stateRatioInfectedToTests
+    );
+    
     const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
 
     const localeDate = currentDate.toLocaleDateString();
-    
+
     commonTemplate.analyticsEmailOpen = trackEmailOpen(sandboxed, candidate, {
         el: FullStatee,
         ev: currentDate.valueOf(),
@@ -345,13 +374,13 @@ const handleError = (error, candidate) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildRatioStatement">buildRatioStatement</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#infectionsByTestsByCountry">infectionsByTestsByCountry</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#promptSendoutStats">promptSendoutStats</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#sentenceCase">sentenceCase</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 16:42:24 GMT+0300 (Moscow Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Jun 02 2020 13:26:59 GMT+0300 (Moscow Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

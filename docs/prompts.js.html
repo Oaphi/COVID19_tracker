@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: triggers.js</title>
+    <title>JSDoc: Source: prompts.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: triggers.js</h1>
+    <h1 class="page-title">Source: prompts.js</h1>
 
     
 
@@ -27,106 +27,30 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @summary generates main menu of the script
- * @param {GoogleAppsScript.Events.SheetsOnOpen} e event object
+ * @summary builds sendout success prompt
+ * @param {State} state 
  * @returns {void}
  */
-function onOpen() {
-
-    getOrInstallInfectionsByTests();
+const promptSendoutStats = (state) => {
 
     const ui = SpreadsheetApp.getUi();
 
-    ui.createMenu('Covid19_Send_Email')
-        .addItem('Approve', 'doApprove')
-        .addSeparator()
-        .addItem("Sandbox", "sandboxApprove")
-        .addItem("Reset", "resetPersistedState")
-        .addToUi();
+    const { timePassed, formattedStart, type } = state;
 
-    ui.createMenu('Refresh_Data')
-        .addItem('Refresh', 'Covid19Refresh')
-        .addToUi();
-}
+    const time = pluralizeCountable(parseInt(timePassed / 1e3), "second");
 
+    const sendoutType = sentenceCase(type);
 
-/**
- * @summary gets or installs a trigger
- * @param {string} callbackName
- * @param {GoogleAppsScript.Script.EventType} type
- * @param {function} installer
- */
-const getOrIntallTrigger = (callbackName, type, installer) =>
+    const timingStats = `${sendoutType} sendout started at ${formattedStart} and took ${time}`;
 
-    /**
-     * @returns {?GoogleAppsScript.Script.Trigger}
-     */
-    () => {
+    const { failed, succeeded, processed } = state;
 
-        console.log(`Checking for triggered ${callbackName} function`);
+    const amountStats = `Processed ${processed} records:\n${succeeded} successfully\n${pluralizeCountable(failed, "error")}`;
 
-        const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const content = HtmlService.createHtmlOutput(`${timingStats}\n\n${amountStats}`).getContent();
 
-        const triggers = ScriptApp.getUserTriggers(ss);
-
-        const found = triggers
-            .filter(trigger => trigger.getEventType() === type &amp;&amp; trigger.getHandlerFunction() === callbackName);
-
-        const [trigger] = found;
-
-        !trigger &amp;&amp; installer();
-
-        return trigger;
-    };
-
-/**
- * @summary installs a trigger
- * @param {string} callbackName 
- * @param {GoogleAppsScript.Script.EventType} type
- */
-const insallTrigger = (callbackName, type) =>
-
-    () => {
-
-        console.log(`Installing triggered ${callbackName} function`);
-
-        const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-        const builder = ScriptApp.newTrigger(callbackName);
-
-        const spreadBuilder = builder.forSpreadsheet(ss);
-
-        /** @type {Map.&lt;string, function(GoogleAppsScript.Script.SpreadsheetTriggerBuilder) } */
-        const typeMap = new Map();
-
-        const { EventType } = ScriptApp;
-
-        typeMap
-            .set(EventType.ON_CHANGE, (builder) => builder.onChange())
-            .set(EventType.ON_EDIT, (builder) => builder.onEdit())
-            .set(EventType.ON_OPEN, (builder) => builder.onOpen());
-
-        const typed = typeMap.get(type)(spreadBuilder);
-
-        typed.create();
-    };
-
-/**
- * @summary partiallly applied installer for infections by tests ratio
- */
-const installInfectionsByTests = insallTrigger(
-    "updateInfectsionsByTests",
-    ScriptApp.EventType.ON_CHANGE
-);
-
-/**
- * @summary partiallly applied getter-installer for infections by tests ratio
- */
-const getOrInstallInfectionsByTests = getOrIntallTrigger(
-    "updateInfectsionsByTests",
-    ScriptApp.EventType.ON_CHANGE,
-    installInfectionsByTests
-);</code></pre>
+    ui.alert("Result", content, ui.ButtonSet.OK);
+};</code></pre>
         </article>
     </section>
 
