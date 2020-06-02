@@ -192,20 +192,36 @@ const getOrInitProp = (obj, propName, callback) => {
 
 /**
  * @summary builds <state> was <place> today: <new total> new <type> per 1MM residents | <total> total
- * @param {string} stateFullName 
+ * @param {string} stateName 
  * @param {number} [place]
  * @param {number} newTotal
  * @param {("tests"|"infections"|"deaths")} type
  * @param {number} total
  * @returns {string}
  */
-const buildStatement = (stateFullName, place = 1, newTotal, type, total) => {
+const buildStatement = (stateName, place = 1, newTotal, type, total) => {
 
-    const todayWas = `${stateFullName} was ${ordinal_suffix_of(place)} today: `;
+    const todayWas = `${stateName} was ${ordinal_suffix_of(place)} today: `;
 
     const totalWas = `${setDecimalPlaces(newTotal)} new ${type} per 1MM residents | ${addCommas(total)}`;
 
     return `${todayWas} ${totalWas} total`;
+};
+
+/**
+ * @summary builds "<state> was <place> today" statement for infetction to test rate
+ * @param {string} stateName 
+ * @param {number} rank
+ * @param {string} ratio
+ * @returns {string}
+ */
+const buildRatioStatement = (stateName, rank, ratio, numDays = 7) => {
+
+    const rankSuffixed = ordinal_suffix_of(rank);
+
+    const todayWas = `${stateName} was ${rankSuffixed} today: `;
+
+    return `${todayWas}${ratio} positive rate over the past ${pluralizeCountable(numDays,"day")} of testing`;
 };
 
 /**
@@ -423,3 +439,10 @@ function JSONtoQuery(
 
     return deep(paramOrder, ordered, encodeParams);
 }
+
+/**
+ * @summary makes word Sentence-case
+ * @param {string} word 
+ * @returns {string}
+ */
+const sentenceCase = (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();

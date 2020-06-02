@@ -185,9 +185,29 @@ function handleApproval2(
     commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
     commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
 
-    commonTemplate.TESstatement = buildStatement(FullStatee, userStateData[37], userStateData[36], "tests", userStateData[32]);
-    commonTemplate.INFstatement = buildStatement(FullStatee, userStateData[39], userStateData[38], "infections", userStateData[28]);
-    commonTemplate.DEAstatement = buildStatement(FullStatee, userStateData[41], userStateData[40], "deaths", userStateData[30]);
+    commonTemplate.TESstatement = buildStatement(
+        state,
+        userStateData[37],
+        userStateData[36],
+        "tests",
+        userStateData[32]
+    );
+
+    commonTemplate.INFstatement = buildStatement(
+        state,
+        userStateData[39],
+        userStateData[38],
+        "infections",
+        userStateData[28]
+    );
+
+    commonTemplate.DEAstatement = buildStatement(
+        state,
+        userStateData[41],
+        userStateData[40],
+        "deaths",
+        userStateData[30]
+    );
 
     commonTemplate.stateINF0 = addCommas(userStateData[3]);
 
@@ -223,6 +243,12 @@ function handleApproval2(
     const stateInfectedToTestedRank = userStateData[44];
     commonTemplate.stateInfectedToTestedRank = stateInfectedToTestedRank;
 
+    commonTemplate.INF2statement = buildRatioStatement(
+        state,
+        stateInfectedToTestedRank,
+        commonTemplate.stateRatioInfectedToTests
+    );
+    
     const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
 
     const localeDate = currentDate.toLocaleDateString();
