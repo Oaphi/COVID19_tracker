@@ -140,6 +140,8 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
         }
 
+        promptSendoutStats(STATE);
+
         if (sandboxed) {
             handleSandbox(approvalConfig.emails);
         }

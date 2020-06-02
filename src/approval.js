@@ -18,7 +18,8 @@ function doApprove(sandboxed = false) {
     const state = State
         .getState({
             start: selectedUserRow,
-            callback: sendout(usersSheet, covidStatsSheet, sandboxed)
+            callback: sendout(usersSheet, covidStatsSheet, sandboxed),
+            type: sandboxed ? "sandbox" : "production"
         });
 
     const candidate = getCandidateFromRow(usersSheet, selectedUserRow || state.start);
@@ -62,7 +63,7 @@ function doApprove(sandboxed = false) {
                 ui.ButtonSet.YES_NO
             );
 
-            if (shouldContinue === ui.Button.NO) {
+            if (shouldContinue === ui.Button.NO || shouldContinue === ui.Button.CLOSE) {
                 console.log("Sendout cancelled");
                 return false;
             }

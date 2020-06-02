@@ -14,7 +14,8 @@ var State = class {
      *  callback : function (State, number) : any,
      *  start : (number | undefined),
      *  storeName : (string | undefined),
-     *  threshold : (number | undefined)
+     *  threshold : (number | undefined),
+     *  type : ("production" | "sandbox")
      * })} stateConfig
      * 
      * @param {stateConfig} arg0
@@ -23,7 +24,8 @@ var State = class {
         callback = (state) => state,
         start = StateStatics.defStart,
         storeName = "continuator",
-        threshold = StateStatics.defThreshold
+        threshold = StateStatics.defThreshold,
+        type = "production"
     } = {}) {
 
         this.callback = callback;
@@ -34,6 +36,8 @@ var State = class {
         this.previousSuccesses = 0;
         this.succeeded = 0;
         this.failed = 0;
+
+        this.type = type;
 
         this.start = +start;
 
@@ -46,6 +50,24 @@ var State = class {
         this.startedAt = Date.now();
         this.lastTimeFailed = 0;
         this.lastTimeSucceeded = 0;
+    }
+
+    /**
+     * @summary gets locale formatted start datetime
+     * @returns {string}
+     */
+    get formattedStart() {
+        const { startedAt } = this;
+        return new Date(startedAt).toLocaleString();
+    }
+
+    /**
+     * @summary gets number of ms passed
+     * @returns {number}
+     */
+    get timePassed() {
+        const { startedAt } = this;
+        return Date.now() - startedAt;
     }
 
     /**
@@ -111,6 +133,8 @@ var State = class {
      * @returns {State}
      */
     continue() {
+
+        this.startedAt = Date.now();
 
         if (!this.canContinue()) {
 
@@ -212,8 +236,6 @@ var State = class {
      * @returns {State}
      */
     reset() {
-
-        delete this.startedAt;
 
         this.processed = 0;
 
