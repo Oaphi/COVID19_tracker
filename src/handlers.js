@@ -197,7 +197,7 @@ function handleApproval2(
         state,
         userStateData[39],
         userStateData[38],
-        "infections",
+        "positive tests",
         userStateData[28]
     );
 

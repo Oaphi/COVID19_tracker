@@ -113,28 +113,25 @@
                         style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px;">
                         The numbers I'm using to create these reports are provided by <a
                           href='https://covidtracking.com/data'>The COVID Tracking Project</a>, an organization that
-                        collects data from every U.S. state on a daily basis. TX and KS were the only states that did
-                        not report any new numbers today. </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-
-              <tr>
-                <td>
-                  <table width="590" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td width="590" align="left" valign="top" class="padding_side"
-                        style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px;">
-                        For an opportunity to support the distribution of millions of PPE items to healthcare facilities
-                        around the world (and more), check out our partnership with International Medical Corps: <a
-                          href='http://internationalmedicalcorps.org/covidping'>internationalmedicalcorps.org/covidping</a>
+                        collects data from every U.S. state on a daily basis.
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
-
+       <tr>
+                <td>
+                  <table width="590" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td width="590" align="left" valign="top" class="padding_side"
+                        style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px;">
+                        MS subscribers will notice negative testing volume today to account for antibody tests that had been 
+                        erroneously reported as regular tests. KS, NM, OR, and RI were the only states that did not report any new numbers today.
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
               <tr>
                 <td>
                   <table width="590" border="0" cellspacing="0" cellpadding="0">
@@ -167,7 +164,7 @@
                     <tr>
                       <td width="590" class="padding_side"
                         style="font-family:Verdana, Geneva, sans-serif; font-size:12px; color:#000000; line-height:20px; padding-top:20px; padding-bottom:5px;">
-                        <strong>NEWLY REPORTED TESTS <span style="color:#1261A0;"><br class="em_display"
+                        <strong>NEWLY REPORTED TESTING VOLUME <span style="color:#1261A0;"><br class="em_display"
                               style="display:none;" />+% increases in blue (good) </span></strong></td>
                     </tr>
                   </table>
@@ -244,7 +241,7 @@
                     <tr>
                       <td width="590" class="padding_side"
                         style="font-family:Verdana, Geneva, sans-serif; font-size:12px; color:#000000; line-height:20px; padding-top:20px; padding-bottom:5px;">
-                        <strong>NEWLY REPORTED INFECTIONS <span style="color:#ed3833;"><br class="em_display"
+                        <strong>NEWLY REPORTED POSITIVE TESTS <span style="color:#ed3833;"><br class="em_display"
                               style="display:none;" />+% increases in red (bad) </span></strong></td>
                     </tr>
                   </table>
@@ -314,7 +311,17 @@
                   </table>
                 </td>
               </tr>
-
+              <tr>
+                <td>
+                  <table width="590" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td width="590" align="left" valign="top" class="padding_side"
+                        style="font-family:Verdana, Geneva, sans-serif; font-size:12px; color:#000000; line-height:20px;">
+                        <?= INF2statement ?></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
               <tr>
                 <td>
                   <table width="590" border="0" cellspacing="0" cellpadding="0">
@@ -403,7 +410,21 @@
                   </table>
                 </td>
               </tr>
-
+              <tr>
+                <td>
+                  <table width="590" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td width="590" align="left" valign="top" class="padding_side"
+                        style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px; padding-bottom:20px;">
+                        For an opportunity to support the distribution of millions of PPE items to healthcare facilities
+                        around the world (and more), check out our partnership with International Medical Corps: <a
+                          href='http://internationalmedicalcorps.org/covidping'>internationalmedicalcorps.org/covidping</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
               <tr>
                 <td>
                   <table width="590" border="0" cellspacing="0" cellpadding="0">
@@ -429,15 +450,15 @@
                   </tr>
                 </table>
               </td>
+
+
+            </tbody>
+          </table>
+          <!--Template Body End-->
+
+        </td>
       </tr>
-
     </tbody>
-  </table>
-  <!--Template Body End-->
-
-  </td>
-  </tr>
-  </tbody>
   </table>
   <!--Full width table End-->
 </body>
