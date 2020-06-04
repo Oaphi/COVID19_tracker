@@ -28,7 +28,6 @@ const sendEmail = ({
         return true;
     }
     catch (error) {
-        console.warn(`Failed to send email to ${to}:\n\n${error}`);
         return false;
     }
 
@@ -115,7 +114,12 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
             try {
 
-                handleApproval2(candidate, approvalConfig, sandboxed);
+                const result = handleApproval2(candidate, approvalConfig, sandboxed);
+
+                if(!result) {
+                    STATE.countFailed().saveFailure();
+                    continue;
+                }
 
                 rowIndicesSent.push(rowIndex);
 

@@ -62,12 +62,11 @@ const makeAnalyticsQuery = (config, eventType) => {
 };
 
 /**
- * @param {boolean} sandboxed
  * @param {Candidate} candidate
  * @param {fullAnalyticsConfig} [config] 
  * @returns {string}
  */
-const trackEmailOpen = (sandboxed, candidate, config = {}) => {
+const trackEmailOpen = (candidate, config = {}) => {
 
     try {
 
@@ -77,17 +76,6 @@ const trackEmailOpen = (sandboxed, candidate, config = {}) => {
         config.dt = "COVID-19 Tracking Email";
 
         const query = makeAnalyticsQuery(config, "open");
-
-        if (sandboxed) {
-            const debugURI = `https://www.google-analytics.com/debug/collect?${query}`;
-            const testResponse = UrlFetchApp.fetch(debugURI);
-
-            const testContent = testResponse.getContentText();
-
-            testResponse.getResponseCode() !== 200 ?
-                console.warn(testContent) :
-                console.log(testContent);
-        }
 
         const fullURI = `${baseURI}?${query}`;
 

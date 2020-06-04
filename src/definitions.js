@@ -28,7 +28,6 @@
  * @property {string} DEAstatement death rate statement (<State> was <position> today)
  * @property {string} INFstatement infections rate statement (<State> was <position> today)
  * @property {string} TESstatement tests rate statement (<State> was <position> today)
- * @property {(string | number)} emailId
  * @property {string} fulldate weekday longname (e.g. Monday)
  * @property {string} FullStatee full state name
  * @property {string} stateDEA0

@@ -60,7 +60,7 @@ const getTotalByUS = (sheet) => {
  * @param {Candidate} candidate 
  * @param {approvalConfig} config
  * @param {boolean} sandboxed
- * @returns {void}
+ * @returns {boolean}
  */
 function handleApproval2(
     candidate,
@@ -96,21 +96,6 @@ function handleApproval2(
     commonTemplate.countryTOTinf = getOrInitProp(commonTemplateValues, "countryTOTinf", () => addCommas(totalUS[28]));
     commonTemplate.countryTOTdea = getOrInitProp(commonTemplateValues, "countryTOTdea", () => addCommas(totalUS[30]));
     commonTemplate.countryTOTtes = getOrInitProp(commonTemplateValues, "countryTOTtes", () => addCommas(totalUS[32]));
-
-
-    var FullStatee = userStateData[2];
-
-    const formattedDate = getOrInitProp(
-        commonTemplateValues,
-        "formattedDate",
-        () => Utilities.formatDate(currentDate, timezone, ' M/d/YY')
-    );
-
-    commonTemplate.emailId = id;
-    commonTemplate.fulldate = currentWeekday;
-    commonTemplate.FullStatee = FullStatee;
-    commonTemplate.Statee = state;
-    commonTemplate.twitterLink = LoadTwitter(userStateData, formattedDate);
 
     const countryTestsPercent1 = getOrInitProp(
         commonTemplateValues,
@@ -169,97 +154,121 @@ function handleApproval2(
     );
     commonTemplate.countryRatioInfectedToTests = countryRatioInfectedToTests;
 
-    const stateInfectionsPercent1 = topercent(userStateData[4]);
-    commonTemplate.stateINF1val = RedGreen2(stateInfectionsPercent1)[1];
-    commonTemplate.stateINF1clr = "color:" + RedGreen2(stateInfectionsPercent1)[0];
 
-    const stateInfectionsPercent2 = topercent(userStateData[6]);
-    commonTemplate.stateINF2val = RedGreen2(stateInfectionsPercent2)[1];
-    commonTemplate.stateINF2clr = "color:" + RedGreen2(stateInfectionsPercent2)[0];
+    var FullStatee = userStateData[2];
 
-    const stateTestPercent1 = topercent(userStateData[24]);
-    commonTemplate.stateTES1val = GreenRed2(stateTestPercent1)[1];
-    commonTemplate.stateTES1clr = "color:" + GreenRed2(stateTestPercent1)[0];
-
-    const stateTestPercent2 = topercent(userStateData[26]);
-    commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
-    commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
-
-    commonTemplate.TESstatement = buildStatement(
-        state,
-        userStateData[37],
-        userStateData[36],
-        "tests",
-        userStateData[32]
+    const formattedDate = getOrInitProp(
+        commonTemplateValues,
+        "formattedDate",
+        () => Utilities.formatDate(currentDate, timezone, ' M/d/YY')
     );
 
-    commonTemplate.INFstatement = buildStatement(
-        state,
-        userStateData[39],
-        userStateData[38],
-        "positive tests",
-        userStateData[28]
-    );
+    commonTemplate.fulldate = currentWeekday;
+    commonTemplate.FullStatee = FullStatee;
+    commonTemplate.Statee = state;
 
-    commonTemplate.DEAstatement = buildStatement(
-        state,
-        userStateData[41],
-        userStateData[40],
-        "deaths",
-        userStateData[30]
-    );
+    //finished common country values
 
-    commonTemplate.stateINF0 = addCommas(userStateData[3]);
+    const cachedStateData = commonTemplateValues[state];
 
-    commonTemplate.stateINF1cmp = addCommas(userStateData[5]);
+    if(!cachedStateData) {
 
-    commonTemplate.stateINF2 = addCommas(userStateData[5]);
-    commonTemplate.stateINF2cmp = addCommas(userStateData[7]);
+        commonTemplate.twitterLink = LoadTwitter(userStateData, formattedDate);
 
-    commonTemplate.stateDEA0 = addCommas(userStateData[13]);
-    commonTemplate.stateDEA1cmp = addCommas(userStateData[15]);
+        const stateInfectionsPercent1 = topercent(userStateData[4]);
+        commonTemplate.stateINF1val = RedGreen2(stateInfectionsPercent1)[1];
+        commonTemplate.stateINF1clr = "color:" + RedGreen2(stateInfectionsPercent1)[0];
 
-    commonTemplate.stateDEA2 = addCommas(userStateData[15]);
-    commonTemplate.stateDEA2cmp = addCommas(userStateData[17]);
+        const stateInfectionsPercent2 = topercent(userStateData[6]);
+        commonTemplate.stateINF2val = RedGreen2(stateInfectionsPercent2)[1];
+        commonTemplate.stateINF2clr = "color:" + RedGreen2(stateInfectionsPercent2)[0];
 
-    commonTemplate.stateTES0 = addCommas(userStateData[23]);
+        const stateTestPercent1 = topercent(userStateData[24]);
+        commonTemplate.stateTES1val = GreenRed2(stateTestPercent1)[1];
+        commonTemplate.stateTES1clr = "color:" + GreenRed2(stateTestPercent1)[0];
 
-    commonTemplate.stateTES1cmp = addCommas(userStateData[25]);
+        const stateTestPercent2 = topercent(userStateData[26]);
+        commonTemplate.stateTES2val = GreenRed2(stateTestPercent2)[1];
+        commonTemplate.stateTES2clr = "color:" + GreenRed2(stateTestPercent2)[0];
 
-    commonTemplate.stateTES2 = addCommas(userStateData[25]);
-    commonTemplate.stateTES2cmp = addCommas(userStateData[27]);
+        commonTemplate.TESstatement = buildStatement(
+            state,
+            userStateData[37],
+            userStateData[36],
+            "tests",
+            userStateData[32]
+        );
 
-    const stateDeathspercent1 = topercent(userStateData[14]);
-    commonTemplate.stateDEA1val = RedGreen2(stateDeathspercent1)[1];
-    commonTemplate.stateDEA1clr = "color:" + RedGreen2(stateDeathspercent1)[0];
+        commonTemplate.INFstatement = buildStatement(
+            state,
+            userStateData[39],
+            userStateData[38],
+            "positive tests",
+            userStateData[28]
+        );
 
-    const stateDeathspercent2 = topercent(userStateData[16]);
-    commonTemplate.stateDEA2val = RedGreen2(stateDeathspercent2)[1];
-    commonTemplate.stateDEA2clr = "color:" + RedGreen2(stateDeathspercent2)[0];
+        commonTemplate.DEAstatement = buildStatement(
+            state,
+            userStateData[41],
+            userStateData[40],
+            "deaths",
+            userStateData[30]
+        );
 
-    const stateRatioInfectedToTests = userStateData[43];
-    commonTemplate.stateRatioInfectedToTests = topercent(stateRatioInfectedToTests);
+        commonTemplate.stateINF0 = addCommas(userStateData[3]);
 
-    const stateInfectedToTestedRank = userStateData[44];
-    commonTemplate.stateInfectedToTestedRank = stateInfectedToTestedRank;
+        commonTemplate.stateINF1cmp = addCommas(userStateData[5]);
 
-    commonTemplate.INF2statement = buildRatioStatement(
-        state,
-        stateInfectedToTestedRank,
-        commonTemplate.stateRatioInfectedToTests
-    );
-    
-    const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}` + formattedDate;
+        commonTemplate.stateINF2 = addCommas(userStateData[5]);
+        commonTemplate.stateINF2cmp = addCommas(userStateData[7]);
 
-    const localeDate = currentDate.toLocaleDateString();
+        commonTemplate.stateDEA0 = addCommas(userStateData[13]);
+        commonTemplate.stateDEA1cmp = addCommas(userStateData[15]);
 
-    commonTemplate.analyticsEmailOpen = trackEmailOpen(sandboxed, candidate, {
-        el: FullStatee,
-        ev: currentDate.valueOf(),
-        dp: `/email/${state}/${localeDate}`
-    });
+        commonTemplate.stateDEA2 = addCommas(userStateData[15]);
+        commonTemplate.stateDEA2cmp = addCommas(userStateData[17]);
 
-    var message = commonTemplate.evaluate().getContent();
+        commonTemplate.stateTES0 = addCommas(userStateData[23]);
+
+        commonTemplate.stateTES1cmp = addCommas(userStateData[25]);
+
+        commonTemplate.stateTES2 = addCommas(userStateData[25]);
+        commonTemplate.stateTES2cmp = addCommas(userStateData[27]);
+
+        const stateDeathspercent1 = topercent(userStateData[14]);
+        commonTemplate.stateDEA1val = RedGreen2(stateDeathspercent1)[1];
+        commonTemplate.stateDEA1clr = "color:" + RedGreen2(stateDeathspercent1)[0];
+
+        const stateDeathspercent2 = topercent(userStateData[16]);
+        commonTemplate.stateDEA2val = RedGreen2(stateDeathspercent2)[1];
+        commonTemplate.stateDEA2clr = "color:" + RedGreen2(stateDeathspercent2)[0];
+
+        const stateRatioInfectedToTests = userStateData[43];
+        commonTemplate.stateRatioInfectedToTests = topercent(stateRatioInfectedToTests);
+
+        const stateInfectedToTestedRank = userStateData[44];
+        commonTemplate.stateInfectedToTestedRank = stateInfectedToTestedRank;
+
+        commonTemplate.INF2statement = buildRatioStatement(
+            state,
+            stateInfectedToTestedRank,
+            commonTemplate.stateRatioInfectedToTests
+        );
+
+        const localeDate = currentDate.toLocaleDateString();
+
+        commonTemplate.analyticsEmailOpen = trackEmailOpen(candidate, {
+            el: FullStatee,
+            ev: currentDate.valueOf(),
+            dp: `/email/${state}/${localeDate}`
+        });
+
+        commonTemplateValues[state] = commonTemplate.evaluate().getContent();
+    }
+
+    const message =  cachedStateData || commonTemplateValues[state];
+
+    const subject = `${FullStatee} COVID-19 daily report: ${currentWeekday}${formattedDate}`;
 
     if (sandboxed) {
         emails.push({
@@ -267,10 +276,10 @@ function handleApproval2(
             subject,
             message
         });
-        return;
+        return true;
     }
 
-    sendEmail({
+    return sendEmail({
         to: candidate.email,
         subject,
         html: message
