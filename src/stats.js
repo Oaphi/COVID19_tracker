@@ -25,18 +25,21 @@ const infectionsByTestsByState = (
     const statsValues = statsRows.getValues();
 
     const currDateValue = new Date(new Date().toISOString().slice(0, 10)).valueOf();
+    const sevenDaysAgo = (currDateValue - 7 * 864e5);
+
+    let reachedDateLimit = false;
 
     const data = statsValues
         .reduce((acc, curr) => {
 
+            if(reachedDateLimit) {
+                return acc;
+            }
+
             /** @type {[ number, string, number ]} */
             const [date, state] = curr;
 
-            const formattedToUTCdateString = date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
-
-            const parsedDateValue = new Date(formattedToUTCdateString).valueOf();
-
-            const sevenDaysAgo = (currDateValue - 7 * 864e5);
+            const parsedDateValue = datenumToValue(date);
 
             if (parsedDateValue >= sevenDaysAgo) {
 
@@ -48,13 +51,14 @@ const infectionsByTestsByState = (
                     prevTests = 0
                 ] = acc.get(state) || [];
 
-                acc.set(state, [prevInfects + infections, prevTests + tests]);
+                return acc.set(state, [prevInfects + infections, prevTests + tests]);
             }
 
+            reachedDateLimit = true;
             return acc;
 
         }, new Map());
-
+    
     return [...data.values()]
         .map(val => {
             const [infections, tests] = val;
@@ -83,15 +87,19 @@ const infectionsByTestsByCountry = ({
 
     const currDateValue = new Date(new Date().toISOString().slice(0, 10)).valueOf();
 
+    let reachedDateLimit = false;
+
     const data = statsValues
         .reduce((acc, curr) => {
 
+            if(reachedDateLimit) {
+                return acc;
+            }
+
             /** @type {[ number, string, number ]} */
             const [date] = curr;
-
-            const formattedToUTCdateString = date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
-
-            const parsedDateValue = new Date(formattedToUTCdateString).valueOf();
+            
+            const parsedDateValue = datenumToValue(date);
 
             const sevenDaysAgo = (currDateValue - 7 * 864e5);
 
@@ -111,6 +119,7 @@ const infectionsByTestsByCountry = ({
                 ];
             }
 
+            reachedDateLimit = true;
             return acc;
 
         }, []);

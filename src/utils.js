@@ -106,8 +106,8 @@ function topercent(a) {
 
         float = float * 100;
 
-        a = (float < 1 && float > -1 && float) ? 
-            `${float.toFixed(2)}%` : 
+        a = (float < 1 && float > -1 && float) ?
+            `${float.toFixed(2)}%` :
             `${float.toFixed(0)}%`;
     }
 
@@ -221,7 +221,7 @@ const buildRatioStatement = (stateName, rank, ratio, numDays = 7) => {
 
     const todayWas = `${stateName} was ${rankSuffixed} today: `;
 
-    return `${todayWas}${ratio} positive rate over the past ${pluralizeCountable(numDays,"day")} of testing`;
+    return `${todayWas}${ratio} positive rate over the past ${pluralizeCountable(numDays, "day")} of testing`;
 };
 
 /**
@@ -474,7 +474,16 @@ const getIndexFromA1 = (a1, type = "column") => {
     const lcaseChars = cellChars.toLowerCase().split("").reverse();
     const middle = lcaseChars.reduce((acc, cur, i) => {
         return acc + (alphabet.indexOf(cur) + 1) * (i > 0 ? 26 ** i : 1);
-    }, 0); //A -> skipped, B -> processed //
+    }, 0);
 
     return middle - 1;
 };
+
+/**
+ * @summary converts YYYYMMDD date in numeric format into value
+ * @param {number} date 
+ * @returns {number}
+ */
+const datenumToValue = (date) => new Date(
+    date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")
+).valueOf();
