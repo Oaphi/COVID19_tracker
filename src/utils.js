@@ -446,3 +446,35 @@ function JSONtoQuery(
  * @returns {string}
  */
 const sentenceCase = (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+
+/**
+ * @summary gets column index from A1 notation
+ * @param {string} a1 
+ * @param {("column"|"row")} [type]
+ * @returns {number}
+ */
+const getIndexFromA1 = (a1, type = "column") => {
+
+    if (!a1) {
+        throw new RangeError(`Expected A1 notation`);
+    }
+
+    const alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+    const [, cellChars, rowNumber] = a1.match(/^([A-Z]+)(?=(\d+)|$)/i) || [];
+
+    if (!cellChars) {
+        throw new RangeError(`Expected correct A1 notation, actual: ${a1}`);
+    }
+
+    if (type === "row") {
+        return rowNumber - 1;
+    }
+
+    const lcaseChars = cellChars.toLowerCase().split("").reverse();
+    const middle = lcaseChars.reduce((acc, cur, i) => {
+        return acc + (alphabet.indexOf(cur) + 1) * (i > 0 ? 26 ** i : 1);
+    }, 0); //A -> skipped, B -> processed //
+
+    return middle - 1;
+};
