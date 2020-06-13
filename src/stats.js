@@ -138,6 +138,11 @@ const infectionsByTestsByCountry = ({
  */
 const updateInfectsionsByTests = () => {
 
+    const lock = LockService.getDocumentLock();
+    if(!lock.tryLock(1)) {
+        return true;
+    }
+
     const infectToTests7DayColNum = 44;
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
