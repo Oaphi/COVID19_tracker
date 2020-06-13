@@ -487,3 +487,10 @@ const getIndexFromA1 = (a1, type = "column") => {
 const datenumToValue = (date) => new Date(
     date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")
 ).valueOf();
+
+/**
+ * @summary resets date value
+ * @param {Date} date
+ * @returns {number}
+ */
+const getResetDateValue = (date) => new Date(date).setHours(0,0,0,0);

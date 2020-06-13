@@ -33,8 +33,8 @@ const SheetIndices = {
  * @param {(number|string)[][]} stateData reference to COVID19 sheet data
  * @param {number[][]} statValues reference to column with per state statistics
  * @param {string} statColumn column with metric data A1 reference
- * @param {number} period period offset, in days
- * @param {number} numDays number of millions to count against
+ * @param {number} periodStartOffset period offset, in days
+ * @param {number} numMillions number of millions to count against
  * @return {number[][]}
  * @customfunction
  */
@@ -44,11 +44,14 @@ function metricPerMillions(
     stateData,
     statValues,
     statColumn,
-    period = 6,
-    numDays = 1
+    numMillions = 1,
+    periodEndOffset = 0,
+    periodStartOffset = 6
 ) {
-    const currDateValue = date.valueOf();
-    const nDaysAgoValue = (currDateValue - 864e5 * period);
+    const currDateMs = date.valueOf();
+
+    const currDateValue = (currDateMs - 864e5 * periodEndOffset);
+    const nDaysAgoValue = (currDateMs - 864e5 * periodStartOffset);
 
     const { Covid19, StateStats } = SheetIndices;
 
@@ -59,7 +62,7 @@ function metricPerMillions(
             const population = columnValues[Covid19.ColumnIndices.Population];
             const stateCode = columnValues[Covid19.ColumnIndices.StateCode];
 
-            const relativePopulation = population / (1e6 * numDays);
+            const relativePopulation = population / (1e6 * numMillions);
 
             const stateStatsForNdays = statValues
                 .slice(1)
@@ -68,7 +71,10 @@ function metricPerMillions(
                     const statDate = cur[StateStats.ColumnIndices.StatDate];
 
                     const sameState = isTotalByCountry || statStateCode === stateCode;
-                    const inOffset = datenumToValue(statDate) >= nDaysAgoValue;
+
+                    const dateMs = datenumToValue(statDate);
+
+                    const inOffset = dateMs >= nDaysAgoValue && dateMs <= currDateValue;
 
                     return sameState && inOffset ? acc + cur[metricsColIdx] : acc;
                 }, 0);
