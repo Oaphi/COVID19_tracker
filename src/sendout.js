@@ -91,6 +91,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
             covidDataByState,
             currentDate,
             currentWeekday,
+            indices: getIndices(),
             sheet,
             timezone: STATE.timezone,
             totalUS

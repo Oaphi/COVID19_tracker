@@ -6,18 +6,51 @@
 
 /** 
  * 0-based column indices
- * @type {Object.<string, IndicesRef>}
  */
 const SheetIndices = {
     StateStats: {
         ColumnIndices: {
             StatDate: 0,
-            StateCode: 1
+            StateCode: 1,
+            Positive: 2,
+            Negative: 3,
+            Pending: 4,
+            HospitalizedCurrent: 5,
+            HospitalizedTotal: 6,
+            OnVentilatorCurrent: 9,
+            OnVentilatorTotal: 10,
+            Recovered: 11,
+            Hash: 12,
+            Deaths: 14,
+            Hospitalized: 15,
+            Total: 16,
+            TotalTestResults: 17,
+            PositiveToNegative: 18,
+            Fips: 19,
+            DeathsIncrease: 20,
+            HospitalizedIncrease: 21,
+            NegativeIncrease: 22,
+            PositiveIncrease: 23,
+            TotalTestsIncrease: 24
         }
     },
     Covid19: {
         ColumnIndices: {
             StateCode: 1,
+            StateName: 2,
+            Infections: 3,
+            Infection1DayChange: 4,
+            InfectionYesterday: 5,
+            Infection7DayChange: 6,
+            InfectionsTotalTo7DayAvg: 7,
+            Hospitalized: 8,
+            Hospital1DayChange: 9,
+            HospitalYesterday: 10,
+            HospitalsTotalTo7DayAvg: 11,
+            Deaths: 12,
+            Death1DayChange : 13,
+            DeathYesterday: 14,
+            Death7DayChange: 15,
             Population: 42,
             Hospitalized: {
                 Increase: 21
@@ -25,6 +58,21 @@ const SheetIndices = {
         }
     }
 };
+
+/**
+ * @summary gets either new or cached column indices
+ * @returns {SheetIndices}
+ */
+function getIndices() {
+    const { indices } = this;
+    
+    if(!indices) {
+        this.indices = SheetIndices;
+        return SheetIndices;
+    }
+
+    return SheetIndices;
+}
 
 /**
  * Counts metric by N millions of people
@@ -84,3 +132,17 @@ function metricPerMillions(
 
     return result;
 }
+
+/**
+ * Returns percent of change over last week
+ * @param {number[][]} dividends 
+ * @param {number[][]} divisors 
+ * @return {string}
+ * @customfunction
+ */
+const percentToPreviousWeek = (dividends, divisors) => {
+    return dividends.map(([dividend], rowIdx) => {
+        const [divisor] = divisors[rowIdx];
+        return topercent((dividend - divisor) / (divisor || 1));
+    });
+};
