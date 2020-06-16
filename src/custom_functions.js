@@ -43,7 +43,6 @@ const SheetIndices = {
             InfectionYesterday: 5,
             Infection7DayChange: 6,
             InfectionsTotalTo7DayAvg: 7,
-            Hospitalized: 8,
             Hospital1DayChange: 9,
             HospitalYesterday: 10,
             HospitalsTotalTo7DayAvg: 11,
