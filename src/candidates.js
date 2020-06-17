@@ -1,5 +1,6 @@
 /**
  * @typedef {({
+ *  generateIds : boolean,
  *  startRow : (number | undefined),
  *  sheet : (GoogleAppsScript.Spreadsheet.Sheet | undefined),
  *  records : (any[][])
@@ -9,6 +10,7 @@
  * @returns {Candidate[]}
  */
 function getCandidates({
+  generateIds = false,
   sheet,
   records,
   startRow
@@ -25,8 +27,8 @@ function getCandidates({
       state,
       status
     ] = record;
-    
-    getUuidUntilUnique({ id, uuids });
+
+    generateIds && getUuidUntilUnique({ id, uuids });
 
     const [name] = email.split("@");
 
@@ -48,10 +50,12 @@ function getCandidates({
       }
     });
   });
-
-  const UUID_COLUMN = 1;
-  const uuidRange = sheet.getRange(startRow, UUID_COLUMN, records.length, 1);
-  uuidRange.setValues(uuids.map(id => [id]));
+  
+  if (generateIds) {
+    const UUID_COLUMN = 1;
+    const uuidRange = sheet.getRange(startRow, UUID_COLUMN, uuids.length, 1);
+    uuidRange.setValues(uuids.map(id => [id]));
+  }
 
   return candidates;
 }

@@ -494,3 +494,17 @@ const datenumToValue = (date) => new Date(
  * @returns {number}
  */
 const getResetDateValue = (date) => new Date(date).setHours(0,0,0,0);
+
+/**
+ * @summary gets effective user email if possible
+ * @returns {string}
+ */
+const getUserEmail = () => {
+    try {
+        return Session.getEffectiveUser().getEmail();
+    }
+    catch (error) {
+        console.log(`User info is not available from this context`);
+        return "anonymous";
+    }
+};

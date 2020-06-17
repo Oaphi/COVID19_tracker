@@ -5,6 +5,8 @@
  */
 function doApprove(sandboxed = false) {
 
+    const userEmail = getUserEmail();
+
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
     const covidStatsSheet = spreadsheet.getSheetByName(CONFIG.statsShName);
@@ -31,6 +33,7 @@ function doApprove(sandboxed = false) {
         const quotaInfo = checkRemainingQuota(state);
 
         const {
+            availablePercent,
             remaining,
             status
         } = quotaInfo;
@@ -59,7 +62,7 @@ function doApprove(sandboxed = false) {
 
             const shouldContinue = ui.alert(
                 `Your Daily Quota`,
-                `Daily quota remaining: ${quotaInfo.availablePercent}%.${numSendable}${lastRan}\nContinue?`,
+                `Daily quota remaining: ${availablePercent}%.${numSendable}${lastRan}\nContinue?`,
                 ui.ButtonSet.YES_NO
             );
 
@@ -75,8 +78,9 @@ function doApprove(sandboxed = false) {
             return true;
         }
 
+        ui.alert(`You reached the quota limit for the account:\n\n${userEmail}`);
         console.log("Mailing quota overflow");
-
+        return false;
     }
 
     console.log('Cancelled');
@@ -114,11 +118,13 @@ const checkRemainingQuota = (state) => {
 
     const quota = MailApp.getRemainingDailyQuota();
 
+    const maxUniqueEmails = 1500;
+
     return ({
         remaining: quota,
         status: quota > 0,
         get availablePercent() {
-            return Math.round((this.remaining / 2000) * 100);
+            return Math.round((this.remaining / maxUniqueEmails) * 100);
         }
     });
 };

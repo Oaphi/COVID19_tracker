@@ -69,8 +69,8 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
                 covidDataByState[stateData[1]] = stateData;
             });
 
-        const records = sheet.getRange(startRow, START_COL, sheet.getLastRow(), END_COL).getValues();
-
+        const records = sheet.getRange(startRow, START_COL, sheet.getLastRow() - 1, END_COL).getValues();
+            
         const candidates = getCandidates({
             startRow,
             records,
@@ -117,7 +117,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
                 const result = handleApproval2(candidate, approvalConfig, sandboxed);
 
-                if(!result) {
+                if (!result) {
                     STATE.countFailed().saveFailure();
                     continue;
                 }
