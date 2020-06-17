@@ -134,8 +134,8 @@ function topercent(a) {
 
         float = float * 100;
 
-        a = (float &lt; 1 &amp;&amp; float > -1 &amp;&amp; float) ? 
-            `${float.toFixed(2)}%` : 
+        a = (float &lt; 1 &amp;&amp; float > -1 &amp;&amp; float) ?
+            `${float.toFixed(2)}%` :
             `${float.toFixed(0)}%`;
     }
 
@@ -249,7 +249,7 @@ const buildRatioStatement = (stateName, rank, ratio, numDays = 7) => {
 
     const todayWas = `${stateName} was ${rankSuffixed} today: `;
 
-    return `${todayWas}${ratio} positive rate over the past ${pluralizeCountable(numDays,"day")} of testing`;
+    return `${todayWas}${ratio} positive rate over the past ${pluralizeCountable(numDays, "day")} of testing`;
 };
 
 /**
@@ -473,7 +473,69 @@ function JSONtoQuery(
  * @param {string} word 
  * @returns {string}
  */
-const sentenceCase = (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();</code></pre>
+const sentenceCase = (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+
+/**
+ * @summary gets column index from A1 notation
+ * @param {string} a1 
+ * @param {("column"|"row")} [type]
+ * @returns {number}
+ */
+const getIndexFromA1 = (a1, type = "column") => {
+
+    if (!a1) {
+        throw new RangeError(`Expected A1 notation`);
+    }
+
+    const alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+    const [, cellChars, rowNumber] = a1.match(/^([A-Z]+)(?=(\d+)|$)/i) || [];
+
+    if (!cellChars) {
+        throw new RangeError(`Expected correct A1 notation, actual: ${a1}`);
+    }
+
+    if (type === "row") {
+        return rowNumber - 1;
+    }
+
+    const lcaseChars = cellChars.toLowerCase().split("").reverse();
+    const middle = lcaseChars.reduce((acc, cur, i) => {
+        return acc + (alphabet.indexOf(cur) + 1) * (i > 0 ? 26 ** i : 1);
+    }, 0);
+
+    return middle - 1;
+};
+
+/**
+ * @summary converts YYYYMMDD date in numeric format into value
+ * @param {number} date 
+ * @returns {number}
+ */
+const datenumToValue = (date) => new Date(
+    date.toString().replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")
+).valueOf();
+
+/**
+ * @summary resets date value
+ * @param {Date} date
+ * @returns {number}
+ */
+const getResetDateValue = (date) => new Date(date).setHours(0,0,0,0);
+
+/**
+ * @summary gets effective user email if possible
+ * @returns {string}
+ */
+const getUserEmail = () => {
+    try {
+        return Session.getEffectiveUser().getEmail();
+    }
+    catch (error) {
+        console.log(`User info is not available from this context`);
+        return "anonymous";
+    }
+};</code></pre>
         </article>
     </section>
 
@@ -483,13 +545,13 @@ const sentenceCase = (word) => word.charAt(0).toUpperCase() + word.slice(1).toLo
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildRatioStatement">buildRatioStatement</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#infectionsByTestsByCountry">infectionsByTestsByCountry</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#promptSendoutStats">promptSendoutStats</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#sentenceCase">sentenceCase</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildRatioStatement">buildRatioStatement</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#datenumToValue">datenumToValue</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getIndexFromA1">getIndexFromA1</a></li><li><a href="global.html#getIndices">getIndices</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getResetDateValue">getResetDateValue</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#getUserEmail">getUserEmail</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#infectionsByTestsByCountry">infectionsByTestsByCountry</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#metricPerMillions">metricPerMillions</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#percentToPreviousWeek">percentToPreviousWeek</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#promptSendoutStats">promptSendoutStats</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#sentenceCase">sentenceCase</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#SheetIndices">SheetIndices</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Jun 02 2020 13:26:59 GMT+0300 (Moscow Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Jun 17 2020 16:04:41 GMT+0300 (Moscow Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
