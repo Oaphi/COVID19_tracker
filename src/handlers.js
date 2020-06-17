@@ -77,12 +77,16 @@ function handleApproval2(
     sandboxed
 ) {
 
-    const {
-        id,
-        state
-    } = candidate;
+    const { state } = candidate;
 
     const userStateData = covidDataByState[state];
+
+    if(!userStateData) {
+        const { email, name } = candidate;
+        const ui = SpreadsheetApp.getUi();
+        ui.alert(`No state data found:\n\nUser: ${name}, ${email}\nState: ${state}`);
+        return false;
+    }
 
     commonTemplate.countryTES0 = getOrInitProp(commonTemplateValues, "countryTES0", () => addCommas(totalUS[23]));
     commonTemplate.countryINF0 = getOrInitProp(commonTemplateValues, "countryINF0", () => addCommas(totalUS[3]));

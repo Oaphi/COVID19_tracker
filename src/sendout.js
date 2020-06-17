@@ -70,7 +70,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
             });
 
         const records = sheet.getRange(startRow, START_COL, sheet.getLastRow() - 1, END_COL).getValues();
-            
+        
         const candidates = getCandidates({
             startRow,
             records,
@@ -101,7 +101,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
         for (const candidate of candidates) {
             rowIndex++;
-
+            
             const { email, state, status } = candidate;
 
             if (!validForSending(email, state, status)) {
