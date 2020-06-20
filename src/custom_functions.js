@@ -142,6 +142,11 @@ function metricPerMillions(
 const percentToPreviousWeek = (dividends, divisors) => {
     return dividends.map(([dividend], rowIdx) => {
         const [divisor] = divisors[rowIdx];
+        
+        if(!divisor) {
+            return "+N/A%";
+        }
+
         return topercent((dividend - divisor) / (divisor || 1));
     });
 };
