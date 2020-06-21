@@ -31,6 +31,8 @@ const updateSentStatus = ({
 
         statusRange.setValues(statusArr.fill([status]));
     });
+
+    SpreadsheetApp.flush();
 };
 
 /**

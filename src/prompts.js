@@ -17,9 +17,13 @@ const promptSendoutStats = (state) => {
 
     const { failed, succeeded, processed } = state;
 
-    const amountStats = `Processed ${processed} records:\n${succeeded} successfully\n${pluralizeCountable(failed, "error")}`;
+    const amountStats = `Processed ${processed} records:<br>${succeeded} successfully<br>${pluralizeCountable(failed, "error")}`;
 
-    const content = HtmlService.createHtmlOutput(`${timingStats}\n\n${amountStats}`).getContent();
+    const willRedirectPrompt = type === "sandbox" ?
+        `<p>Parsed templates will be shown in ${pluralizeCountable(10, "second")}</p>` :
+        "";
 
-    ui.alert("Result", content, ui.ButtonSet.OK);
+    const content = HtmlService.createHtmlOutput(`<p>${timingStats}</p><p>${amountStats}</p>${willRedirectPrompt}`);
+
+    ui.showModalDialog(content, "Result");
 };

@@ -140,16 +140,17 @@ const sendout = (sheet, covidStatsSheet, { safe, sandboxed, max }) =>
 
         }
 
-        promptSendoutStats(STATE);
-
-        if (sandboxed && STATE.succeeded > 0) {
-            handleSandbox(approvalConfig.emails);
-        }
-
         updateSentStatus({
             rows: rowIndicesSent,
             sheet
         });
 
         STATE.processed === candidates.length ? STATE.allDone() : STATE.save();
+
+        promptSendoutStats(STATE);
+
+        if (sandboxed && STATE.succeeded > 0) {
+            Utilities.sleep(1e4); //wait 10 seconds before new dialog
+            handleSandbox(approvalConfig.emails);
+        }
     };
