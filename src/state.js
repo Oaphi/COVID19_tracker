@@ -232,6 +232,17 @@ var State = class {
     }
 
     /**
+     * @summary overrides starting index
+     * @param {number} newStart 
+     * @returns {State}
+     */
+    overrideStart(newStart) {
+        this.start = parseInt(newStart);
+        console.log(`Overridden start: ${newStart}`);
+        return this;
+    }
+
+    /**
      * @summary resets state configuration to defaults
      * @returns {State}
      */

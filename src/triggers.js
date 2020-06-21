@@ -9,10 +9,16 @@ function onOpen() {
 
     const ui = SpreadsheetApp.getUi();
 
+    const safeMode = ui.createMenu("Safe Mode")
+        .addItem("Production", "safeApprove")
+        .addItem("Sandbox", "safeSandboxApprove");
+
     ui.createMenu('Covid19_Send_Email')
         .addItem('Approve', 'doApprove')
-        .addSeparator()
         .addItem("Sandbox", "sandboxApprove")
+        .addSeparator()
+        .addSubMenu(safeMode)
+        .addSeparator()
         .addItem("Reset", "resetPersistedState")
         .addToUi();
 

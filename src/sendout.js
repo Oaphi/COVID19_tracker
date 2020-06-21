@@ -46,9 +46,9 @@ const validForSending = (email, state, status) => {
 /**
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet 
  * @param {GoogleAppsScript.Spreadsheet.Sheet} covidStatsSheet
- * @param {boolean} sandboxed
+ * @param {{sandboxed:boolean,safe:boolean, max:number}} config
  */
-const sendout = (sheet, covidStatsSheet, sandboxed) =>
+const sendout = (sheet, covidStatsSheet, { safe, sandboxed, max }) =>
 
     /**
      * @param {State} STATE
@@ -69,16 +69,11 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
                 covidDataByState[stateData[1]] = stateData;
             });
 
-        const records = sheet.getRange(startRow, START_COL, sheet.getLastRow() - 1, END_COL).getValues();
-        
-        const candidates = getCandidates({
-            startRow,
-            records,
-            sheet
-        });
+        const records = sheet.getRange(startRow, START_COL, max || sheet.getLastRow() - 1, END_COL).getValues();
+
+        const candidates = getCandidates({ startRow, records, sheet });
 
         const currentDate = getcelldate(covidStatsSheet);
-
         const currentWeekday = getDayOfWeek(currentDate);
 
         const rowIndicesSent = [];
@@ -101,7 +96,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
         for (const candidate of candidates) {
             rowIndex++;
-            
+
             const { email, state, status } = candidate;
 
             if (!validForSending(email, state, status)) {
@@ -147,7 +142,7 @@ const sendout = (sheet, covidStatsSheet, sandboxed) =>
 
         promptSendoutStats(STATE);
 
-        if (sandboxed) {
+        if (sandboxed && STATE.succeeded > 0) {
             handleSandbox(approvalConfig.emails);
         }
 

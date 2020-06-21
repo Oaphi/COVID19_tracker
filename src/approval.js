@@ -1,17 +1,30 @@
 /**
  * @summary builds confirmation popup
- * @param {boolean} [sandboxed]
+ * 
+ * @param {{
+ *  safe : (boolean|undefined),
+ *  sandboxed : (boolean|undefined),
+ *  max : number
+ * }} config
+ * 
  * @returns {boolean}
  */
-function doApprove(sandboxed = false) {
+function doApprove({
+    sandboxed = false,
+    safe = false
+} = {}) {
+    const quotaInfo = checkRemainingQuota();
+
+    const config = { sandboxed, safe };
+    safe && (config.max = quotaInfo.remaining);
 
     const userEmail = getUserEmail();
 
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
-    const covidStatsSheet = spreadsheet.getSheetByName(CONFIG.statsShName);
-
-    const usersSheet = spreadsheet.getSheetByName(CONFIG.userShName);
+    const { statsShName, userShName } = CONFIG;
+    const covidStatsSheet = spreadsheet.getSheetByName(statsShName);
+    const usersSheet = spreadsheet.getSheetByName(userShName);
 
     const ui = SpreadsheetApp.getUi();
 
@@ -20,17 +33,22 @@ function doApprove(sandboxed = false) {
     const state = State
         .getState({
             start: selectedUserRow,
-            callback: sendout(usersSheet, covidStatsSheet, sandboxed),
+            callback: sendout(usersSheet, covidStatsSheet, config),
             type: sandboxed ? "sandbox" : "production"
         });
 
-    const candidate = getCandidateFromRow(usersSheet, selectedUserRow || state.start);
+    selectedUserRow && state.overrideStart(selectedUserRow);
 
-    const response = ui.alert(`Starting from ${candidate.name}, state ${candidate.state}, confirm?`, ui.ButtonSet.YES_NO);
+    const candidate = getCandidateFromRow(usersSheet, selectedUserRow || state.start);
+    
+    const safePrompt = safe ? "in safe mode" : "";
+
+    const response = ui.alert(
+        `Starting ${safePrompt} from user ${candidate.name}, state ${candidate.state}, confirm?`,
+        ui.ButtonSet.YES_NO
+    );
 
     if (response === ui.Button.YES) {
-
-        const quotaInfo = checkRemainingQuota(state);
 
         const {
             availablePercent,
@@ -83,7 +101,7 @@ function doApprove(sandboxed = false) {
         return false;
     }
 
-    console.log('Cancelled');
+    console.log('Sendout unconfirmed');
     return false;
 }
 
@@ -111,10 +129,9 @@ const getCurrentlySelectedCandidate = (sheet) => {
  * })} quotaResult
  * 
  * @summary checks remaining quota
- * @param {State} state
  * @returns {quotaResult}
  */
-const checkRemainingQuota = (state) => {
+const checkRemainingQuota = () => {
 
     const quota = MailApp.getRemainingDailyQuota();
 
@@ -134,7 +151,28 @@ const checkRemainingQuota = (state) => {
  */
 const sandboxApprove = () => {
 
-    const isSandboxed = true;
+    const config = {
+        sandboxed: true
+    };
 
-    return doApprove(isSandboxed);
+    return doApprove(config);
+};
+
+const safeSandboxApprove = () => {
+    return doApprove({
+        safe: true,
+        sandboxed: true
+    });
+};
+
+/**
+ * @summary launches the workflow, but stops as soon as quota is reached
+ */
+const safeApprove = () => {
+
+    const config = {
+        safe: true
+    };
+
+    return doApprove(config);
 };
