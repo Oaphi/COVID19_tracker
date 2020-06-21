@@ -140,7 +140,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line97">line 97</a>
+        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line103">line 103</a>
     </li></ul></dd>
     
 
@@ -200,7 +200,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line89">line 89</a>
+        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line95">line 95</a>
     </li></ul></dd>
     
 
@@ -1825,7 +1825,7 @@
     
 
     
-    <h4 class="name" id="doApprove"><span class="type-signature"></span>doApprove<span class="signature">(sandboxed<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="doApprove"><span class="type-signature"></span>doApprove<span class="signature">(config)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -1855,11 +1855,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1871,36 +1867,20 @@
 
         <tr>
             
-                <td class="name"><code>sandboxed</code></td>
+                <td class="name"><code>config</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">Object</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
             
 
             <td class="description last"></td>
@@ -1944,7 +1924,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line6">line 6</a>
+        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line12">line 12</a>
     </li></ul></dd>
     
 
@@ -2401,7 +2381,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line95">line 95</a>
+        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -3353,7 +3333,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line31">line 31</a>
+        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -4164,7 +4144,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="handlers.js.html">handlers.js</a>, <a href="handlers.js.html#line330">line 330</a>
+        <a href="handlers.js.html">handlers.js</a>, <a href="handlers.js.html#line334">line 334</a>
     </li></ul></dd>
     
 
@@ -4644,7 +4624,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line59">line 59</a>
+        <a href="triggers.js.html">triggers.js</a>, <a href="triggers.js.html#line65">line 65</a>
     </li></ul></dd>
     
 
@@ -6707,7 +6687,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="state.js.html">state.js</a>, <a href="state.js.html#line321">line 321</a>
+        <a href="state.js.html">state.js</a>, <a href="state.js.html#line332">line 332</a>
     </li></ul></dd>
     
 
@@ -6750,6 +6730,92 @@
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="safeApprove"><span class="type-signature"></span>safeApprove<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+    <p class="summary">launches the workflow, but stops as soon as quota is reached</p>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line171">line 171</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6811,7 +6877,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line135">line 135</a>
+        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line152">line 152</a>
     </li></ul></dd>
     
 
@@ -6847,7 +6913,7 @@
     
 
     
-    <h4 class="name" id="sendout"><span class="type-signature"></span>sendout<span class="signature">(sheet, covidStatsSheet, sandboxed)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="sendout"><span class="type-signature"></span>sendout<span class="signature">(sheet, covidStatsSheet, config)</span><span class="type-signature"></span></h4>
     
 
     
@@ -6933,13 +6999,13 @@
 
         <tr>
             
-                <td class="name"><code>sandboxed</code></td>
+                <td class="name"><code>config</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">Object</span>
 
 
             
@@ -9124,7 +9190,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="handlers.js.html">handlers.js</a>, <a href="handlers.js.html#line289">line 289</a>
+        <a href="handlers.js.html">handlers.js</a>, <a href="handlers.js.html#line293">line 293</a>
     </li></ul></dd>
     
 
@@ -9708,7 +9774,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line106">line 106</a>
+        <a href="approval.js.html">approval.js</a>, <a href="approval.js.html#line124">line 124</a>
     </li></ul></dd>
     
 
@@ -11445,13 +11511,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildRatioStatement">buildRatioStatement</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#datenumToValue">datenumToValue</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getIndexFromA1">getIndexFromA1</a></li><li><a href="global.html#getIndices">getIndices</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getResetDateValue">getResetDateValue</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#getUserEmail">getUserEmail</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#infectionsByTestsByCountry">infectionsByTestsByCountry</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#metricPerMillions">metricPerMillions</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#percentToPreviousWeek">percentToPreviousWeek</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#promptSendoutStats">promptSendoutStats</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#sentenceCase">sentenceCase</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#SheetIndices">SheetIndices</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addCommas">addCommas</a></li><li><a href="global.html#addSign">addSign</a></li><li><a href="global.html#buildRatioStatement">buildRatioStatement</a></li><li><a href="global.html#buildStatement">buildStatement</a></li><li><a href="global.html#colorLink">colorLink</a></li><li><a href="global.html#Covid19Refresh">Covid19Refresh</a></li><li><a href="global.html#Covid19Refresh_BACKUP">Covid19Refresh_BACKUP</a></li><li><a href="global.html#datenumToValue">datenumToValue</a></li><li><a href="global.html#deep">deep</a></li><li><a href="global.html#doApprove">doApprove</a></li><li><a href="global.html#fetchAndParseContent">fetchAndParseContent</a></li><li><a href="global.html#getcelldate">getcelldate</a></li><li><a href="global.html#getCurrentlySelectedCandidate">getCurrentlySelectedCandidate</a></li><li><a href="global.html#getDayOfWeek">getDayOfWeek</a></li><li><a href="global.html#getIndexFromA1">getIndexFromA1</a></li><li><a href="global.html#getIndices">getIndices</a></li><li><a href="global.html#getOrInitProp">getOrInitProp</a></li><li><a href="global.html#getOrInstallInfectionsByTests">getOrInstallInfectionsByTests</a></li><li><a href="global.html#getOrIntallTrigger">getOrIntallTrigger</a></li><li><a href="global.html#getResetDateValue">getResetDateValue</a></li><li><a href="global.html#getSavedState">getSavedState</a></li><li><a href="global.html#getTotalByUS">getTotalByUS</a></li><li><a href="global.html#getUserEmail">getUserEmail</a></li><li><a href="global.html#GreenRed2">GreenRed2</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#include">include</a></li><li><a href="global.html#infectionsByTestsByCountry">infectionsByTestsByCountry</a></li><li><a href="global.html#insallTrigger">insallTrigger</a></li><li><a href="global.html#installInfectionsByTests">installInfectionsByTests</a></li><li><a href="global.html#isZero">isZero</a></li><li><a href="global.html#JSONtoQuery">JSONtoQuery</a></li><li><a href="global.html#LoadTwitter">LoadTwitter</a></li><li><a href="global.html#makeAnalyticsQuery">makeAnalyticsQuery</a></li><li><a href="global.html#metricPerMillions">metricPerMillions</a></li><li><a href="global.html#onOpen">onOpen</a></li><li><a href="global.html#ordinal_suffix_of">ordinal_suffix_of</a></li><li><a href="global.html#percentToPreviousWeek">percentToPreviousWeek</a></li><li><a href="global.html#pluralizeCountable">pluralizeCountable</a></li><li><a href="global.html#promptSendoutStats">promptSendoutStats</a></li><li><a href="global.html#RedGreen2">RedGreen2</a></li><li><a href="global.html#resetPersistedState">resetPersistedState</a></li><li><a href="global.html#safeApprove">safeApprove</a></li><li><a href="global.html#sandboxApprove">sandboxApprove</a></li><li><a href="global.html#sendout">sendout</a></li><li><a href="global.html#sentenceCase">sentenceCase</a></li><li><a href="global.html#setDecimalPlaces">setDecimalPlaces</a></li><li><a href="global.html#SheetIndices">SheetIndices</a></li><li><a href="global.html#splitIntoConseq">splitIntoConseq</a></li><li><a href="global.html#topercent">topercent</a></li><li><a href="global.html#trackEmailOpen">trackEmailOpen</a></li><li><a href="global.html#trackLinkClick">trackLinkClick</a></li><li><a href="global.html#updateInfectsionsByTests">updateInfectsionsByTests</a></li><li><a href="global.html#validForSending">validForSending</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Jun 17 2020 16:04:41 GMT+0300 (Moscow Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sun Jun 21 2020 07:57:02 GMT+0300 (Moscow Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
