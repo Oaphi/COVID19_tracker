@@ -104,7 +104,7 @@ function topercent(a) {
 
         let float = parseFloat(a);
 
-        float = float * 100;
+        float = Math.round(float * 100);
 
         a = (float < 1 && float > -1 && float) ?
             `${float.toFixed(2)}%` :
