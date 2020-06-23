@@ -115,6 +115,25 @@ function topercent(a) {
 }
 
 /**
+ * @summary same as topercent, but returns int for floats with .00
+ * @param {string|number} [num] 
+ * @param {boolean} [treatZeroAsNaN]
+ * @returns {string}
+ */
+const toIntOrFloatPercent = (num = 0, treatZeroAsNaN = false) => {
+
+    const int = parseInt(num);
+
+    if (isNaN(int) || (treatZeroAsNaN && num === 0)) {
+        return `${num}%`;
+    }
+
+    const float = parseFloat(parseFloat(num).toFixed(2));
+
+    return `${int !== float ? float : int}%`;
+};
+
+/**
  * @summary splits array in consequitive subsequences
  * @param {any[]} [source] 
  * @returns {any[][]}
@@ -493,7 +512,7 @@ const datenumToValue = (date) => new Date(
  * @param {Date} date
  * @returns {number}
  */
-const getResetDateValue = (date) => new Date(date).setHours(0,0,0,0);
+const getResetDateValue = (date) => new Date(date).setHours(0, 0, 0, 0);
 
 /**
  * @summary gets effective user email if possible

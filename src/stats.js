@@ -62,7 +62,7 @@ const infectionsByTestsByState = (
     return [...data.values()]
         .map(val => {
             const [infections, tests] = val;
-            return [tests !== 0 ? infections / tests : 0];
+            return [toIntOrFloatPercent(tests !== 0 ? infections / tests * 1e2 : 0)];
         });
 };
 
@@ -127,7 +127,7 @@ const infectionsByTestsByCountry = ({
     return [data]
         .map(val => {
             const [infections, tests] = val;
-            return [tests !== 0 ? infections / tests : 0];
+            return [toIntOrFloatPercent(tests !== 0 ? infections / tests * 1e2 : 0)];
         });
 
 };
