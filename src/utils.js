@@ -29,13 +29,13 @@ function addCommas(nStr) {
  */
 function addSign(v) {
     if (v === "+N/A%") {
-        v = "%2B%25";
+        v = "+%";
     }
     else if (v === "0%") {
-        v = "%2B0%25";
+        v = "+0%";
     }
     else if (parseFloat(v).toFixed(2) > 0) {
-        v = "%2B" + v;
+        v = `+${v}`;
     }
     return v;
 }

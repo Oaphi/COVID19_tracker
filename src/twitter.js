@@ -14,11 +14,14 @@ function LoadTwitter(userStateData, formattedDate) {
 
     const newDeaths = addCommas(userStateData[13]);
 
-    var tweet = "https://twitter.com/intent/tweet?text=";
-    tweet += state + "%27s 24-hour COVID-19 %23%27s as of 5%3A30pm EST" + formattedDate + ", via covidping.com%3A%0A%0A";
-    tweet += "New tests%3A " + newTests + " %28" + addSign(topercent(userStateData[26])) + " vs. 7day avg%29%0A%0A";
-    tweet += "New infections%3A " + newInfections + " %28" + addSign(topercent(userStateData[6])) + " vs. 7day avg%29%0A%0A";
-    tweet += "New deaths%3A " + newDeaths + " %28" + addSign(topercent(userStateData[16])) + " vs. 7day avg%29";
+    var tweet = `https://twitter.com/intent/tweet?text=`;
 
-    return tweet;
+    const lines = [
+        `${state}'s 24-hour #COVID19 data as of 5:30pm ET ${formattedDate}, via covidping.com:`,
+        `New tests: ${newTests} (${addSign(topercent(userStateData[26]))} vs. 7day avg)`,
+        `New infections: ${newInfections} (${addSign(topercent(userStateData[6]))} vs. 7day avg)`,
+        `New deaths: ${newDeaths} (${addSign(topercent(userStateData[16]))} vs. 7day avg)`
+    ];
+
+    return tweet + encodeURIComponent(lines.join("\n\n"));
 }
