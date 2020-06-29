@@ -17,7 +17,7 @@ function LoadTwitter(userStateData, formattedDate) {
     var tweet = `https://twitter.com/intent/tweet?text=`;
 
     const lines = [
-        `${state}'s 24-hour #COVID19 data as of 5:30pm ET ${formattedDate}, via covidping.com:`,
+        `${state}'s 24-hour #COVID19 data as of 5:30pm ET${formattedDate}, via covidping.com:`,
         `New tests: ${newTests} (${addSign(topercent(userStateData[26]))} vs. 7day avg)`,
         `New infections: ${newInfections} (${addSign(topercent(userStateData[6]))} vs. 7day avg)`,
         `New deaths: ${newDeaths} (${addSign(topercent(userStateData[16]))} vs. 7day avg)`
