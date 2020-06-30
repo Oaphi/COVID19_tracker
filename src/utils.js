@@ -102,17 +102,24 @@ function topercent(a) {
 
     if (a !== "+N/A%" && a !== "0%") {
 
-        let float = parseFloat(a);
+        const percent = parseFloat(a) * 100;
 
-        float = Math.round(float * 100);
-
-        a = (float < 1 && float > -1 && float) ?
-            `${float.toFixed(2)}%` :
-            `${float.toFixed(0)}%`;
+        const rounded = parseInt(percent) ? Math.round(percent) : percent;
+        return `${rounded.toFixed(parseInt(rounded) ? 0 : 2)}%`;
     }
 
     return a;
 }
+
+/**
+ * 
+ * @param {number|string} num 
+ */
+const toPercentFloatIfFraction = (num = 0) => {
+
+    const int = parseInt(num);
+
+};
 
 /**
  * @summary same as topercent, but returns int for floats with .00

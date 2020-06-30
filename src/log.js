@@ -48,3 +48,61 @@ function loggy(string, level) {
   if (last >= LOG_LENGTH) { sheet.deleteRow(last); }
   sheet.getRange(1, 1).activate().getValue();
 }
+
+class Benchmarker {
+
+  static running = false;
+
+  static ended = 0;
+
+  static started = 0;
+
+  static fractions = {
+    "milliseconds" : 1,
+    "seconds" : 1000,
+    "minutes" : 60
+  };
+
+  /**
+   * @summary ends benchmark
+   * @returns {Benchmarker}
+   */
+  static end() {
+    Benchmarker.ended = Date.now();
+    Benchmarker.running = false;
+    return Benchmarker;
+  }
+
+  /**
+   * @summary starts benchmark
+   * @returns {Benchmarker}
+   */
+  static start() {
+    Benchmarker.reset();
+    Benchmarker.started = Date.now();
+    Benchmarker.running = true;
+    return Benchmarker;
+  }
+
+  /**
+   * @summary resets benchmark
+   * @returns {Benchmarker}
+   */
+  static reset() {
+    Benchmarker.started = 0;
+    Benchmarker.ended = 0;
+    return Benchmarker;
+  }
+
+  /**
+   * @summary returns difference between start and end
+   * @param {"milliseconds"|"seconds"|"minutes"} fraction 
+   * @returns {number}
+   */
+  static took(fraction = "milliseconds") {
+    const { fractions, started, ended } = Benchmarker;
+    const divisor = fractions[fraction];
+    return (ended - started) / divisor;
+  }
+
+}
