@@ -285,17 +285,11 @@ function handleApproval2(
         return true;
     }
 
-    Benchmarker.start();
-
     const sendStatus = sendEmail({
         to: candidate.email,
         subject,
         html: message
     });
-
-    Benchmarker.end();
-
-    console.log( Benchmarker.took("seconds") );
 
     return sendStatus;
 }
