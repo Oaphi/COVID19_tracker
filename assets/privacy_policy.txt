@@ -1,0 +1,18 @@
+Last updated: July 8th, 2020
+Overview 
+The Privacy Policy (hereinafter "Policy") explains how your personal data (hereinafter "information", "data") is collected, used and disclosed by the covidping project (hereinafter "we", "us", "project") with respect to your access and use of the https://covidping.com/ website (hereinafter "website") or other tools or services the project provides (hereinafter collectively refered to as "services") so you can make an informed decision about using the project.
+We reserve the right to make changes to the Policy at any time and guarantee to provide you with a notice should such a change occur by indicating the last updated date and via the services we provide. If you continue to use the services after being notified of the changes, you agree to the changes made to the Policy.
+What information do we collect and how? 
+We may collect your personal identification information (PII) as required for the services to function properly, including: email address. You will always be provided with a way to easily identify which information is collected by the service we provide.
+You directly provide us with the information we collect by:
+filling in the email address to the website to subscribe for email notifications
+browsing our webiste by setting first-party and third-party cookies (insomuch as the services are used)
+How do we use your data? 
+We collect your information to either provide you with a better browsing experience or for the following purposes:
+sending you email notifications about updates on COVID-19 reporting
+How do we store your data? 
+We may store and process the information in the United States and other countries. We reserve the right to keep your data as long as it is required for the services to properly function, and you can request deletion of your data at any time.
+Third-party services 
+We do not share the information with third-party services other than services working on our behalf including, but not limited to: Google Analytics. Privacy policies of the services listed are also in effect inasmuch as the services are used by our services.
+Contact us about the Policy
+Should you have any questions about the Policy please contact us at hi@covidping.com
