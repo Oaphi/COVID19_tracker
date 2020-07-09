@@ -113,25 +113,15 @@
                         style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px;">
                         The numbers I'm using to create these reports are provided by <a
                           href='https://covidtracking.com/data'>The COVID Tracking Project</a>, an organization that
-                        collects data from every U.S. state on a daily basis. 
+                        collects data from every U.S. state on a daily basis. <?= inlineNotice ?>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
-              <tr>
-                <td>
-                  <table width="590" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td width="590" align="left" valign="top" class="padding_side"
-                        style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px;">
-                       AK, RI, and WY were the only states that did not report new data today. 
-                        Several other states also reported incomplete data coming out of the holiday weekend.
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
+
+              <?!= separateNotice ?>
+
         
                 <td>
                   <table width="590" border="0" cellspacing="0" cellpadding="0">
