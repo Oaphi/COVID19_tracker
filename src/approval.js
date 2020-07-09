@@ -78,9 +78,15 @@ function doApprove({
 
             const lastRan = lastError || lastSuccess ? `\n${lastError}${lastSuccess}\n` : "\n";
 
+            const { inline, separate } = parseOddsNoticeConfig();
+
+            const noticeText = `The following text will be added to the template:
+            Inline: "${inline}"
+            Separate: "${separate}"\n`;
+
             const shouldContinue = ui.alert(
                 `Your Daily Quota`,
-                `Daily quota remaining: ${availablePercent}%.${numSendable}${lastRan}\nContinue?`,
+                `Daily quota remaining: ${availablePercent}%.${numSendable}${lastRan}\n${noticeText}\nContinue?`,
                 ui.ButtonSet.YES_NO
             );
 

@@ -1,3 +1,40 @@
+
+/**
+ * @summary persists settings about odds notice text
+ * @param {string} propName
+ * @param {{ inline : string, separate : string }} options
+ */
+const persistOddsNoticeText = (propName, { inline, separate }) => {
+
+    const store = PropertiesService.getScriptProperties();
+
+    const toPersist = JSON.stringify({ inline, separate });
+
+    console.log(toPersist);
+
+    store.setProperty(propName, toPersist);
+};
+
+/**
+ * @summary gets and parses odds notice config from store
+ * @returns {{ inline : string, separate : string }}
+ */
+const parseOddsNoticeConfig = () => {
+
+    const store = PropertiesService.getScriptProperties();
+
+    const { oddsNoticePropName } = CONFIG;
+
+    const value = store.getProperty(oddsNoticePropName) || "{}";
+
+    const { inline = "", separate = "" } = JSON.parse(value);
+
+    return {
+        inline,
+        separate
+    };
+};
+
 //no support for class props in GAS yet;
 const StateStatics = {
     defStart: 2,
@@ -68,22 +105,6 @@ var State = class {
     get timePassed() {
         const { startedAt } = this;
         return Date.now() - startedAt;
-    }
-
-    /**
-     * @summary gets or initializes state
-     * @param {stateConfig} [initConfig] 
-     * @returns {State}
-     */
-    static getState(initConfig) {
-
-        const { initializedState } = StateStatics;
-
-        if (!initializedState) {
-            StateStatics.initializedState = new State(initConfig).load();
-        }
-
-        return StateStatics.initializedState;
     }
 
     /**
@@ -219,7 +240,7 @@ var State = class {
             const value = parsed[key];
 
             //skip persisted start if user decided to start later
-            if(key === "start" && value < this[key] ) {
+            if (key === "start" && value < this[key]) {
                 continue;
             }
 
@@ -324,6 +345,22 @@ var State = class {
     }
 
 };
+
+/**
+ * @type {function (stateConfig) : State}
+ */
+const boundGetState = (function (initConfig) {
+
+    const { initializedState } = StateStatics;
+
+    if (!initializedState) {
+        StateStatics.initializedState = new State(initConfig).load();
+    }
+
+    return StateStatics.initializedState;
+}).bind(State);
+
+State.getState = boundGetState;
 
 /**
  * @summary handles state reset

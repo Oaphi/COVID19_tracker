@@ -1,60 +1,37 @@
 /**
- * @summary generates main menu of the script
- * @param {GoogleAppsScript.Events.SheetsOnOpen} e event object
- * @returns {void}
- */
-function onOpen() {
-
-    getOrInstallInfectionsByTests();
-
-    const ui = SpreadsheetApp.getUi();
-
-    // const safeMode = ui.createMenu("Safe Mode")
-    //     .addItem("Production", "safeApprove")
-    //     .addItem("Sandbox", "safeSandboxApprove");
-
-    ui.createMenu('Covid19_Send_Email')
-        .addItem('Approve', 'safeApprove')
-        .addItem("Sandbox", "safeSandboxApprove")
-        .addSeparator()
-        // .addSubMenu(safeMode)
-        // .addSeparator()
-        .addItem("Reset", "resetPersistedState")
-        .addToUi();
-
-    ui.createMenu('Refresh_Data')
-        .addItem('Refresh', 'Covid19Refresh')
-        .addToUi();
-}
-
-
-/**
  * @summary gets or installs a trigger
  * @param {string} callbackName
  * @param {GoogleAppsScript.Script.EventType} type
  * @param {function} installer
  */
-const getOrIntallTrigger = (callbackName, type, installer) =>
+const getOrInstallTrigger = (callbackName, type, installer) =>
 
     /**
      * @returns {?GoogleAppsScript.Script.Trigger}
      */
     () => {
 
-        console.log(`Checking for triggered ${callbackName} function`);
+        try {
+            console.log(`Checking for triggered ${callbackName} function`);
 
-        const ss = SpreadsheetApp.getActiveSpreadsheet();
+            const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-        const triggers = ScriptApp.getUserTriggers(ss);
+            const triggers = ScriptApp.getUserTriggers(ss);
 
-        const found = triggers
-            .filter(trigger => trigger.getEventType() === type && trigger.getHandlerFunction() === callbackName);
+            const found = triggers
+                .filter(trigger => trigger.getEventType() === type && trigger.getHandlerFunction() === callbackName);
 
-        const [trigger] = found;
+            const [trigger] = found;
 
-        !trigger && installer();
+            !trigger && installer();
 
-        return trigger;
+            return trigger;
+        }
+        catch (error) {
+            console.log(`Error during trigger check ${error}`);
+            return null;
+        }
+
     };
 
 /**
@@ -100,8 +77,40 @@ const installInfectionsByTests = insallTrigger(
 /**
  * @summary partiallly applied getter-installer for infections by tests ratio
  */
-const getOrInstallInfectionsByTests = getOrIntallTrigger(
+const getOrInstallInfectionsByTests = getOrInstallTrigger(
     "updateInfectsionsByTests",
     ScriptApp.EventType.ON_CHANGE,
     installInfectionsByTests
 );
+
+/**
+ * @summary generates main menu of the script
+ * @param {GoogleAppsScript.Events.SheetsOnOpen} e event object
+ * @returns {void}
+ */
+function onOpen() {
+
+    try {
+        getOrInstallInfectionsByTests();
+
+        console.log("finished checking trigger");
+
+        const ui = SpreadsheetApp.getUi();
+
+        ui.createMenu('Covid19_Send_Email')
+            .addItem('Approve', 'safeApprove')
+            .addItem("Sandbox", "safeSandboxApprove")
+            .addItem("Check odds notice", "promptOddsNoticeSettings")
+            .addSeparator()
+            .addItem("Reset", "resetPersistedState")
+            .addToUi();
+
+        ui.createMenu('Refresh_Data')
+            .addItem('Refresh', 'Covid19Refresh')
+            .addToUi();
+    }
+    catch (error) {
+        console.log(error);
+    }
+
+}

@@ -179,6 +179,12 @@ function handleApproval2(
 
     if(!cachedStateData) {
 
+        const { inline, separate } = parseOddsNoticeConfig();
+
+        commonTemplate.inlineNotice = inline;
+
+        commonTemplate.separateNotice = separate ? createTemplateNoticeRow(separate) : "";
+
         commonTemplate.twitterLink = LoadTwitter(userStateData, formattedDate);
 
         const stateInfectionsPercent1 = topercent(userStateData[4]);
