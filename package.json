@@ -25,5 +25,39 @@
   "repository": {
     "type": "GIT",
     "url": "https://github.com/Oaphi/COVID19_tracker.git"
+  },
+  "jshintConfig": {
+    "globals": {
+      "getOrInitProp": true,
+      "RedGreen2": true,
+      "GreenRed2": true,
+      "CONFIG": true,
+      "ScriptApp": true,
+      "SpreadsheetApp": true,
+      "UrlFetchApp": true,
+      "HtmlService": true,
+      "LockService": true,
+      "PropertiesService": true,
+      "pluralizeCountable": true,
+      "topercent": true,
+      "console": true,
+      "addCommas": true,
+      "addSign": true,
+      "Logger": true,
+      "Session": true,
+      "Utilities": true
+    },
+    "elision": true,
+    "undef": true,
+    "leanswitch": true,
+    "latedef": true,
+    "freeze": true,
+    "expr": true,
+    "mocha": true,
+    "eqeqeq": true,
+    "curly": true,
+    "esversion": 9,
+    "futurehostile": true,
+    "unused": true
   }
 }
