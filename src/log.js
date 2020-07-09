@@ -49,19 +49,7 @@ function loggy(string, level) {
   sheet.getRange(1, 1).activate().getValue();
 }
 
-class Benchmarker {
-
-  static running = false;
-
-  static ended = 0;
-
-  static started = 0;
-
-  static fractions = {
-    "milliseconds" : 1,
-    "seconds" : 1000,
-    "minutes" : 60
-  };
+var Benchmarker = class {
 
   /**
    * @summary ends benchmark
@@ -105,4 +93,13 @@ class Benchmarker {
     return (ended - started) / divisor;
   }
 
-}
+};
+
+Benchmarker.running = false;
+Benchmarker.ended = 0;
+Benchmarker.started = 0;
+Benchmarker.fractions = {
+  "milliseconds": 1,
+  "seconds": 1000,
+  "minutes": 60
+};
