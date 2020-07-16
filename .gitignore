@@ -1,5 +1,7 @@
 **/node_modules
 
+assets/cloud-emailing*
+
 .clasp.json
 
 ids.txt
