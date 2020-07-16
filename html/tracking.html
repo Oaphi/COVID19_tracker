@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="mdc-tab-bar" role="tablist">
+        <div class="mdc-tab-scroller">
+            <div class="mdc-tab-scroller__scroll-area">
+                <div class="mdc-tab-scroller__scroll-content">
+
+                    <? Object.keys(data).forEach((date,d) => { ?>
+
+                    <button class="mdc-tab" role="tab" aria-selected="false" tabindex="0">
+                        <span class="mdc-tab__content">
+                            <span class="mdc-tab__text-label"><?= date ?></span>
+                        </span>
+                        <span class="mdc-tab-indicator">
+                            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                        </span>
+                        <span class="mdc-tab__ripple"></span>
+                    </button>
+
+                    <? }); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mdc-layout-grid">
+        <div class="mdc-layout-grid__inner">
+            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-2">
+                <div class="mdc-chip-set mdc-chip-set--choice" role="grid">
+                    <div class="mdc-chip" role="row">
+                        <div class="mdc-chip__ripple"></div>
+                        <i class="material-icons mdc-chip__icon">check</i>
+                        <span role="gridcell">
+                            <span role="button" tabindex="0" class="mdc-chip__primary-action">
+                                <span class="mdc-chip__text">With views only</span>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+                <div id="headerFilterSet" class="mdc-chip-set mdc-chip-set--filter" role="grid">
+                    <? headers.forEach((header,h) => { ?>
+                    <div class="mdc-chip mdc-chip--selected" role="row">
+                        <div class="mdc-chip__ripple"></div>
+                        <span class="mdc-chip__checkmark">
+                            <svg class="mdc-chip__checkmark-svg" viewBox="-2 -3 30 30">
+                                <path class="mdc-chip__checkmark-path" fill="none" stroke="black"
+                                    d="M1.73,12.91 8.1,19.28 22.79,4.59" />
+                            </svg>
+                        </span>
+                        <span role="gridcell">
+                            <span role="button" tabindex="<?= h + 1 ?>" class="mdc-chip__primary-action">
+                                <span class="mdc-chip__text"><?= header ?></span>
+                            </span>
+                        </span>
+                    </div>
+                    <? }); ?>
+                </div>
+            </div>
+            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
+
+                <div class="mdc-data-table mdc-data-table--sticky-header">
+                    <table class="mdc-data-table__table" aria-label="email record">
+                        <thead>
+                            <tr class="mdc-data-table__header-row">
+                                <? headers.forEach((header,h) => { ?>
+
+                                <th <?!=h ? '' : 'hidden=\"hidden\"' ?> class="mdc-data-table__header-cell
+                                    mdc-data-table__header-cell--with-sort"
+                                    role="columnheader" scope="col" aria-sort="none" data-column-id="<?= header ?>">
+                                    <div class="mdc-data-table__header-cell-wrapper">
+                                        <button class="mdc-icon-button material-icons mdc-data-table__sort-icon-button"
+                                            aria-label="Sort by <?= header ?>"
+                                            aria-describedby="<?= header ?>-label">arrow_upward</button>
+                                        <div class="mdc-data-table__header-cell-label"><?= header ?></div>
+                                        <div class="mdc-data-table__sort-status-label" aria-hidden="true"
+                                            id="<?= header ?>-label"></div>
+                                    </div>
+                                </th>
+
+                                <? }); ?>
+                            </tr>
+                        </thead>
+                        <tbody class="mdc-data-table__content"></tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div id="paginators" class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+    <script>
+        console.log(google.script.run, mdc);
+
+        const {
+            chips: { MDCChipSet },
+            list: {
+                MDCList
+            },
+            slider: { MDCSlider },
+            snackbar: { MDCSnackbar },
+            tabBar: {
+                MDCTabBar,
+                MDCTabBarFoundation
+            },
+            tab: { MDCTab },
+            dataTable: { MDCDataTable }
+        } = mdc;
+
+        const nav = new MDCTabBar(document.querySelector('.mdc-tab-bar'));
+        const hasViewsSet = new MDCChipSet(document.querySelector(".mdc-chip-set--choice"));
+        const headersSet = new MDCChipSet(document.querySelector("#headerFilterSet"));
+
+        headersSet.chips[0].selected = false;
+
+        const tabs = Array.from(document.querySelectorAll(".mdc-tab")).map(e => new MDCTab(e));
+
+        const currentDate = "<?= current ?>";
+
+        const currentDateIdx = tabs.findIndex(({ root }) => root.innerText === currentDate);
+        let currentlyActiveTab = currentDateIdx < 0 ? tabs.length - 1 : currentDateIdx;
+
+        console.log({ currentlyActiveTab, currentDate, tabs, nav, headersSet });
+
+        tabs.forEach((tab, tabIdx) => tabIdx === currentlyActiveTab ? tab.activate() : tab.deactivate());
+
+        const hideOrShowComponent = ({ root }, className, state) => {
+            const { classList } = root;
+            state ?
+                classList.add(className) :
+                classList.remove(className);
+        };
+
+        const hideOrShowRow = (condition, ...skip) => (row) => {
+            row.hidden = !!condition;
+            Array.from(row.cells).forEach((c, i) => skip.includes(i) || (c.hidden = !!condition));
+        }
+
+        const rowsPerTable = +"<?= rowsPerTable ?>";
+
+        const mdcTdMarkup = ({
+            classes = ["mdc-data-table__cell"],
+            hidden = false,
+            text = "",
+            type = "none"
+        } = {}) => {
+
+            const cell = document.createElement("td");
+            cell.hidden = hidden;
+            cell.textContent = text;
+
+            const { classList } = cell;
+
+            classList.add(...classes);
+
+            type === "num" && classList.add("mdc-data-table__cell--numeric");
+
+            return cell;
+        };
+
+        const tabData = Object.values(JSON.parse("<?= JSON.stringify(data) ?>"));
+
+        const rowsFromChunk = (tableContentElem, chunk) => {
+            chunk.forEach(({ email, code, state, uid, viewed }) => {
+                const row = document.createElement("tr");
+                row.classList.add("mdc-data-table__row");
+
+                const idCell = mdcTdMarkup({ text: uid, hidden: true });
+                const emailCell = mdcTdMarkup({ text: email });
+                const codeCell = mdcTdMarkup({ text: code });
+                const stateCell = mdcTdMarkup({ text: state });
+                const viewCell = mdcTdMarkup({ text: viewed, type: "num" });
+
+                row.append(idCell, emailCell, codeCell, stateCell, viewCell);
+
+                tableContentElem.append(row);
+            });
+        };
+
+        const dataTables = Array.from(document.querySelectorAll(".mdc-data-table"))
+            .map((dataTable, i) => {
+
+                const [firstChunk] = tabData[currentlyActiveTab];
+
+                const tableContentElem = dataTable.querySelector(".mdc-data-table__content");
+
+                rowsFromChunk(tableContentElem, firstChunk);
+
+                const table = new MDCDataTable(dataTable);
+
+                return table;
+            });
+
+        //set pagination for chunks
+        const paginationWrapper = document.querySelector("#paginators");
+        const paginations = tabData.map((chunks, ch) => {
+
+            const slider = document.createElement("div");
+            slider.tabIndex = 0;
+
+            slider.setAttribute("role", "slider");
+            slider.setAttribute("aria-valuemin", 1);
+            slider.setAttribute("aria-valuemax", chunks.length);
+            slider.setAttribute("aria-valuenow", 0);
+            slider.setAttribute("aria-label", "Select Value");
+
+            const { classList } = slider;
+            classList.add("mdc-slider", "mdc-slider--discrete");
+
+            const trackContainer = document.createElement("div");
+            trackContainer.classList.add("mdc-slider__track-container");
+            slider.append(trackContainer);
+
+            const track = document.createElement("div");
+            track.classList.add("mdc-slider__track");
+            trackContainer.append(track);
+
+            const thumbContainer = document.createElement("div");
+            thumbContainer.classList.add("mdc-slider__thumb-container");
+            slider.append(thumbContainer);
+
+            const pin = document.createElement("div");
+            pin.classList.add("mdc-slider__pin");
+            thumbContainer.append(pin);
+
+            const pinMarker = document.createElement("span");
+            pinMarker.classList.add("mdc-slider__pin-value-marker");
+            pin.append(pinMarker);
+
+            const thumb = document.createElement("svg");
+            thumb.classList.add("mdc-slider__thumb");
+            thumb.width = 21;
+            thumb.hieght = 21;
+            thumbContainer.append(thumb);
+
+            const circle = document.createElement("circle");
+            circle.cx = 10.5;
+            circle.cy = 10.5;
+            circle.r = 7.785;
+            thumb.append(circle);
+
+            const focus = document.createElement("div");
+            focus.classList.add("mdc-slider__focus-ring");
+            thumbContainer.append(focus);
+
+            paginationWrapper.append(slider);
+
+            slider.addEventListener("MDCSlider:change", ({ detail }) => {
+
+                const { value } = detail;
+
+                const currentChunk = tabData[currentlyActiveTab][value - 1];
+
+                const tableContentElem = dataTables[0].root.querySelector(".mdc-data-table__content");
+
+                tableContentElem.innerHTML = "";
+                rowsFromChunk(tableContentElem, currentChunk);
+            });
+
+            return new MDCSlider(slider);
+        });
+
+        paginations.forEach((p, i) => hideOrShowComponent(p, "hidden", i !== currentlyActiveTab));
+
+        console.log({ hasViewsSet, dataTables, paginations });
+
+        window.addEventListener("MDCChip:selection", ({ detail }) => {
+
+            const { chips } = hasViewsSet;
+
+            const [viewsChip] = chips;
+
+            const { chips: headerChips } = headersSet;
+
+            const filteredChips = headerChips.map(chip => chip.selected);
+
+            dataTables.forEach(tabContent => {
+                const rows = tabContent.getRows();
+
+                const { headerRow } = tabContent;
+
+                const { cells: headerCells } = headerRow;
+
+                Array.from(headerCells).forEach((headerCell, hc) => headerCell.hidden = !filteredChips[hc]);
+
+                rows.forEach(row => {
+                    const { cells } = row;
+
+                    Array.from(cells).forEach((cell, c) => cell.hidden = !filteredChips[c]);
+
+                    const [, email, code, state, views] = Array.from(cells).map(c => c.innerText);
+
+                    const rowHasViews = !!(+views);
+
+                    row.hidden = viewsChip.selected ? !rowHasViews : false;
+                });
+            });
+        });
+
+        window.addEventListener("MDCDataTable:sorted", ({ detail }) => {
+            const { columnId, columnIndex, sortValue } = detail;
+
+            const currentTable = dataTables[currentlyActiveTab];
+            const rows = currentTable.getRows();
+
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].innerText;
+                const bText = b.cells[columnIndex].innerText;
+
+                if (isNaN(aText) || isNaN(bText)) {
+                    return sortValue === "ascending" ? (aText > bText ? 1 : -1) : (bText > aText ? 1 : -1);
+                }
+
+                return sortValue === "ascending" ?
+                    +aText - +bText :
+                    +bText - +aText;
+            });
+
+            currentTable.root.querySelector(".mdc-data-table__content").append(...rows);
+
+            currentTable.layout();
+        });
+
+        window.addEventListener("MDCTab:interacted", ({ detail }) => {
+
+            currentlyActiveTab = tabs.findIndex(t => t.active);
+
+            const tableContentElem = dataTables[0].root.querySelector(".mdc-data-table__content");
+            tableContentElem.innerHTML = "";
+
+            paginations.forEach(slider => slider.value = 0);
+
+            const [currentChunk] = tabData[currentlyActiveTab];
+            rowsFromChunk(tableContentElem, currentChunk);
+        });
+
+        const notifications = Array.from(document.querySelectorAll(".mdc-snackbar"));
+        const wokeNotifications = notifications.map(cmp => new MDCSnackbar(cmp));
+
+    </script>
+</body>
+
+</html>

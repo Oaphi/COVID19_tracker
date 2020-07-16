@@ -41,18 +41,38 @@ function addSign(v) {
 }
 
 /**
+ * Checks whether request is successfull
+ * @param {GoogleAppsScript.URL_Fetch.HTTPResponse} res
+ * @returns {Boolean} 
+ */
+const isSuccess = (res) => {
+    const code = res.getResponseCode();
+    return code >= 200 && code < 300;
+};
+
+/**
  * @summary fetches endpoint and parses content
  * @param {string} url 
+ * @param {object} [headers]
+ * @param {{ json }}
  * @returns {?object[]}
  */
-const fetchAndParseContent = (url) => {
-    const response = UrlFetchApp.fetch(url, {
+const fetchAndParseContent = (url, headers = {}, { json } = {}) => {
+
+    /** @type {GoogleAppsScript.URL_Fetch.URLFetchRequestOptions} */
+    const params = {
+        contentType : "application/json",
         muteHttpExceptions: true
-    });
+    };
+
+    Object.keys(headers).length && (params.headers = headers);
+    json && (params.payload = JSON.stringify(json));
+
+    const response = UrlFetchApp.fetch(url, params);
 
     const code = response.getResponseCode();
 
-    if (code >= 200 && code < 300) {
+    if (isSuccess(response)) {
 
         const jsonData = response.getContentText();
 
@@ -63,10 +83,64 @@ const fetchAndParseContent = (url) => {
             Logger.log(dataError);
             return null;
         }
-
     }
 
+    console.log({code}, response.getContentText());
+
     return null;
+};
+
+/**
+ * @typedef {{
+ *  index : number,
+ *  spreadsheet : (GoogleAppsScript.Spreadsheet.Spreadsheet | undefined)
+ * }} SheetByIndexConfig
+ * 
+ * @summary gets sheet by its index
+ * @param {SheetByIndexConfig}
+ * @returns {GoogleAppsScript.Spreadsheet.Sheet?}
+ */
+const getSheetByIndex = ({
+    index = 0,
+    spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+}) => {
+    const [targetSheet] = spreadsheet.getSheets()
+        .filter((__, idx) => index === idx);
+
+    return targetSheet || null;
+};
+
+/**
+ * @typedef {{
+ *  name : string,
+ *  index : number,
+ *  hidden : boolean
+ * }} GetOrInitSheetConfig
+ * 
+ * @summary gets sheet by its name or index and creates if missing
+ * @param {GetOrInitSheetConfig}
+ * @returns {GoogleAppsScript.Spreadsheet.Sheet?}
+ */
+const getOrInitSheet = ({ name, index, hidden = false }) => {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+    let sheet = null;
+
+    if (name) {
+        sheet = spreadsheet.getSheetByName(name);
+    }
+
+    if (index !== undefined) {
+        sheet = getSheetByIndex({ index, spreadsheet });
+    }
+
+    if (!sheet) {
+        const newSheet = spreadsheet.insertSheet(name);
+        hidden && newSheet.hideSheet();
+        sheet = newSheet;
+    }
+
+    return sheet;
 };
 
 /**
@@ -523,4 +597,106 @@ const getUserEmail = () => {
         console.log(`User info is not available from this context`);
         return "anonymous";
     }
+};
+
+/**
+ * @summary formats date to ISO
+ * @param {Date} date 
+ * @returns {string}
+ */
+const toISOdate = (date) => (date instanceof Date ? date : new Date(date)).toISOString().slice(0, 10);
+
+/**
+ * @typedef {object} ChunkifyConfig
+ * @property {number} [size]
+ * @property {number[]} [limits]
+ * 
+ * @summary splits an array into chunks
+ * @param {any[]} source 
+ * @param {ChunkifyConfig}
+ * @returns {any[][]}
+ */
+const chunkify = (source, { limits = [], size } = {}) => {
+
+    const output = [];
+
+    if (size) {
+        const { length } = source;
+
+        const maxNumChunks = Math.ceil((length || 1) / size);
+        let numChunksLeft = maxNumChunks;
+
+        while (numChunksLeft) {
+            const chunksProcessed = maxNumChunks - numChunksLeft;
+            const elemsProcessed = chunksProcessed * size;
+            output.push(source.slice(elemsProcessed, elemsProcessed + size));
+            numChunksLeft--;
+        }
+
+        return output;
+    }
+
+    const { length } = limits;
+
+    if (!length) {
+        return [Object.assign([], source)];
+    }
+
+    let lastSlicedElem = 0;
+
+    limits.forEach((limit, i) => {
+        const limitPosition = lastSlicedElem + limit;
+        output[i] = source.slice(lastSlicedElem, limitPosition);
+        lastSlicedElem = limitPosition;
+    });
+
+    const lastChunk = source.slice(lastSlicedElem);
+    lastChunk.length && output.push(lastChunk);
+
+    return output;
+};
+
+/**
+ * @typedef {object} ShrinkConfig
+ * @property {any[][]} [source]
+ * @property {number} [left]
+ * @property {number} [right]
+ * @property {number} [bottom]
+ * @property {number} [horizontally]
+ * @property {number} [top]
+ * @property {number} [vertically]
+ * 
+ * @summary shirnks a grid
+ * @param {ShrinkConfig} [source]
+ */
+const shrinkGrid = ({
+    source,
+    horizontally = 0,
+    vertically = 0,
+    top = 0,
+    right = 0,
+    bottom = 0,
+    left = 0
+} = {}) => {
+
+    if (!source || !source.length) {
+        return [[]];
+    }
+
+    if (horizontally) {
+        left = right = Math.floor(horizontally / 2);
+    }
+
+    if (vertically) {
+        top = bottom = Math.floor(vertically / 2);
+    }
+
+    let temp = [];
+
+    temp = source.slice(top);
+    temp = bottom ? temp.slice(0, -bottom) : temp;
+
+    return temp
+        .map(row => right ? row.slice(0, -right) : row)
+        .map(row => row.slice(left));
 };
