@@ -217,7 +217,7 @@ const getUniqueSubscribers = (input = getUserRecords()): string[] => {
   const subs: Set<string> = new Set();
 
   unique.reduce((acc, { email }) => {
-    subs.add(email.toLowerCase());
+    subs.log(email.toLowerCase());
     return acc;
   }, subs);
 
@@ -239,50 +239,6 @@ function getCandidateFromRow(sheet, startRow) {
     startIndex: startRow,
   }).candidates[0];
 }
-
-/**
- * @summary sets duplicate user labels
- * @param {{
- *  start : (number|1),
- *  max : (number|undefined)
- * }}
- */
-const setDuplicateUserLabels = ({ start = 1, max } = {}) => {
-  const {
-    sheets: { users },
-    users: {
-      statuses: { duplicate },
-    },
-  } = CONFIG;
-
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const userSheet = ss.getSheetByName(users);
-
-  const userRecords = getUserRecords({ start, max, excludeInvalid: false });
-  const { all } = getUsers(userRecords);
-
-  const wentThrough = {};
-
-  const values = all.map(({ email, state, status }) => {
-    const existingStates = wentThrough[email] || [];
-    const isUnique = !existingStates.includes(state);
-    isUnique && existingStates.push(state);
-    wentThrough[email] = existingStates;
-
-    const newStatus = isUnique ? status : duplicate;
-
-    return [newStatus];
-  });
-
-  const rngToUpdate = userSheet.getRange(
-    start + 1,
-    5,
-    values.length,
-    values[0].length
-  );
-
-  rngToUpdate.setValues(values);
-};
 
 /**
  * @summary adds more candidates to send if there are invalid users
@@ -309,7 +265,7 @@ const addCandidatesWhileInvalid = (
       const nextStartRow = start + (max - invalid);
 
       if (nextStartRow > sheet.getLastRow()) {
-        logger.add(`reached last record, still invalid ${invalid}`);
+        logger.log(`reached last record, still invalid ${invalid}`);
         invalid = 0;
         break;
       }
@@ -336,7 +292,7 @@ const addCandidatesWhileInvalid = (
 
       list.push(...onlyNew);
     } catch (error) {
-      logger.add(`failed to fill invalid: ${error}`, "error");
+      logger.log(`failed to fill invalid: ${error}`, "error");
       invalid = 0;
     }
   }

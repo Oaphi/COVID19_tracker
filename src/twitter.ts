@@ -71,7 +71,7 @@ const checkDailyTweet = ({
     const res = UrlFetchApp.fetch(uri, { muteHttpExceptions: true });
 
     if (!isSuccess(res)) {
-      logger.add("failed to fetch twitter");
+      logger.log("failed to fetch twitter");
       logger.dumpAll();
       return false;
     }
@@ -94,7 +94,7 @@ const checkDailyTweet = ({
 
   } catch (error) {
     onError(error);
-    logger.add(`error during Twitter fetch: ${error}`, "error");
+    logger.log(`error during Twitter fetch: ${error}`, "error");
     logger.dumpAll();
     return false;
   }

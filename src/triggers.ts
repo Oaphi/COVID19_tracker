@@ -145,12 +145,12 @@ const startUserStatsUpdate = () => {
 
     const allOk = userOk && unsubOk;
 
-    logger.add("user stats", allOk ? "log" : "error");
+    logger.log("user stats", allOk ? "log" : "error");
     logger.dumpAll();
 
     return allOk;
   } catch (error) {
-    logger.add(error, "error");
+    logger.log(error, "error");
     logger.dumpAll();
 
     return false;
@@ -273,7 +273,7 @@ const archiveData = ({
     );
 
     if (rowIdx < 0) {
-      logger.add("no data to archive");
+      logger.log("no data to archive");
       return blobs;
     }
 
@@ -283,7 +283,7 @@ const archiveData = ({
     const startRow = rowIdx + 1;
     sheet.deleteRows(startRow, sheet.getLastRow() - startRow + 1);
   } catch (error) {
-    logger.add(error, "error");
+    logger.log(error, "error");
     onError(error);
   }
 
@@ -324,7 +324,7 @@ function startWeeklyArchivalFlow(timeEvent = {}) {
     archiveData({ ...commonParams, sheetName: states });
 
     if (!blobs.length) {
-      logger.add("no data will be archived, aborting");
+      logger.log("no data will be archived, aborting");
       logger.dumpAll();
       lock.releaseLock();
       return true;
@@ -350,9 +350,9 @@ function startWeeklyArchivalFlow(timeEvent = {}) {
       },
     ]);
 
-    logger.add(`archive status: ${status ? "OK" : "FAIL"}`);
+    logger.log(`archive status: ${status ? "OK" : "FAIL"}`);
   } catch (error) {
-    logger.add(error, "error");
+    logger.log(error, "error");
     lock.releaseLock();
     return false;
   }
@@ -382,7 +382,7 @@ function startDailyApprovalFlow(
   const lock = PropertyLockService.getScriptLock();
   const hasLock = lock.tryLock(5e2);
   if (!hasLock) {
-    logger.add(`someone else has the lock`);
+    logger.log(`someone else has the lock`);
     logger.dumpAll();
     return false;
   }
@@ -395,7 +395,7 @@ function startDailyApprovalFlow(
     const date = gmtToEdt();
     const hour = date.getHours();
 
-    logger.add(`trying to update at ${hour} HH`);
+    logger.log(`trying to update at ${hour} HH`);
 
     const canProceed = Triggers.isInHourlyRange({
       start: 17,
@@ -404,7 +404,7 @@ function startDailyApprovalFlow(
     });
 
     if (!canProceed && !manual) {
-      logger.add(`out of time range`);
+      logger.log(`out of time range`);
       dumpRelease(logger, lock);
       return true;
     }
@@ -414,14 +414,14 @@ function startDailyApprovalFlow(
     } = getGeneralSettings();
 
     if (!checkDailyTweet({ logger, date, onError })) {
-      logger.add("tweet not published yet");
+      logger.log("tweet not published yet");
       dumpRelease(logger, lock);
       return true;
     }
 
     //successfully updated today
     if (dataFor >= toISOdate(date) && !manual) {
-      logger.add("already updated");
+      logger.log("already updated");
       dumpRelease(logger, lock);
       return true;
     }
@@ -429,7 +429,7 @@ function startDailyApprovalFlow(
     const status = refresh({ onError });
 
     if (!status) {
-      logger.add("failed to auto refresh", "error");
+      logger.log("failed to auto refresh", "error");
       dumpRelease(logger, lock);
       return false;
     }
@@ -437,7 +437,7 @@ function startDailyApprovalFlow(
     const cleared = clearSendoutStatus();
 
     if (!cleared) {
-      logger.add("failed to clear status", "error");
+      logger.log("failed to clear status", "error");
       dumpRelease(logger, lock);
       return false;
     }
@@ -455,7 +455,7 @@ function startDailyApprovalFlow(
     ]);
 
     if (!statusNotif) {
-      logger.add("failed to send refresh notification", "error");
+      logger.log("failed to send refresh notification", "error");
     }
 
     const sentTestEmails = sendTestStateEmails({
@@ -466,7 +466,7 @@ function startDailyApprovalFlow(
     });
 
     if (!sentTestEmails) {
-      logger.add("failed to send test state emails", "error");
+      logger.log("failed to send test state emails", "error");
     }
 
     sendApprovalEmail({ logger, recipient });

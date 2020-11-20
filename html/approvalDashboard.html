@@ -141,7 +141,7 @@
 
                 const status = await asyncGAPIv2({
                     funcName: "startWeeklySendoutFlow",
-                    params: [recipient.value]
+                    params: [[recipient.value]]
                 });
 
                 notify(status ? `Successfully sent` : `Failed to send`);

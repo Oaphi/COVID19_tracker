@@ -116,7 +116,7 @@ const getWeeklyStateInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
 
       return acc;
     },
-    [0, 33]
+    [0, 41]
   );
 
   console.log({ thisWeek, acc_last_week });
@@ -138,7 +138,7 @@ const startWeeklySendoutFlow = (sendTo?: string[]) => {
   const lock = PropertyLockService.getScriptLock();
   const hasLock = lock.tryLock(5e2);
   if (!hasLock) {
-    logger.add(`someone else has the lock`);
+    logger.log(`someone else has the lock`);
     logger.dumpAll();
     return false;
   }
@@ -146,7 +146,7 @@ const startWeeklySendoutFlow = (sendTo?: string[]) => {
   try {
     const unique = sendTo || getUniqueSubscribers();
 
-    logger.add(`Sending to ${unique.length} subscribers`);
+    logger.log(`Sending to ${unique.length} subscribers`);
 
     const {
       emails: {
@@ -205,6 +205,8 @@ const startWeeklySendoutFlow = (sendTo?: string[]) => {
       returnMissing: true,
     });
 
+    logger.log(`weekly email size: ${byteSize(parsed) / 1024} Kb`);
+
     const settings = getGeneralSettings();
 
     const {
@@ -238,26 +240,20 @@ const startWeeklySendoutFlow = (sendTo?: string[]) => {
       return { ...proto, to: email, message };
     });
 
-    const status = sender(emails);
+    const status = sendEmailsInParts({
+      sender,
+      emails,
+      logger,
+      parts: 10,
+      wait: 2e3,
+    });
 
-    const { primary } = getAmazonIdentities(settings);
-
-    const tstamp = gmtToEdt(new Date());
-
-    sender([
-      {
-        to: primary,
-        message: "",
-        subject: `Weekly email ${
-          status ? "succeeded" : "failed"
-        } ${tstamp.toLocaleDateString()}`,
-      },
-    ]);
+    logger.log(`weekly email status: ${status}`);
 
     dumpRelease(logger, lock);
     return true;
   } catch (error) {
-    logger.add(`failed weekly send: ${error}`, "error");
+    logger.log(`failed weekly send: ${error}`, "error");
     dumpRelease(logger, lock);
     return false;
   }

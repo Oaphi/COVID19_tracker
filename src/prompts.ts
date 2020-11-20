@@ -147,7 +147,6 @@ const promptGeneralSettings = () => {
 /**
  * @summary prompts current subject
  * @param {{
- *  user : Candidate,
  *  prefix : string,
  *  state : string,
  *  stateNamesMap : Object.<string,string>
@@ -155,7 +154,6 @@ const promptGeneralSettings = () => {
  * @returns {string}
  */
 const promptCurrentSubject = ({
-  user,
   state,
   stateNamesMap = getStateCodeToNameMap(),
   prefix = "",
@@ -172,6 +170,32 @@ const promptCurrentSubject = ({
   const stateCode = stateNamesMap[state] || "US";
 
   return `${prefix}${stateCode} COVID-19 daily report: ${currDay} ${formattedDate}`;
+};
+
+/**
+ * @summary builds US totals rows
+ */
+const promptTotalsRow = ({
+  tests,
+  infections,
+  deaths,
+  hospitalized,
+  hospitalizedState,
+  stateCode
+}) => {
+  const entities = getJoinedEntityList([
+    `${addCommas(tests)} tests`,
+    `${addCommas(infections)} infections`,
+    `${addCommas(deaths)} deaths`,
+  ]);
+
+  const commonTotals = `U.S. COVID-19 totals to date: ${entities}.`;
+
+  const hosps = `There are currently ${addCommas(
+    hospitalized
+  )} hospitalized COVID-19 patients reported across the U.S., ${addCommas(hospitalizedState)} of which are in ${stateCode}.`;
+
+  return [commonTotals, hosps].map(createTemplateRow).join("");
 };
 
 /**
@@ -272,7 +296,7 @@ const promptAmountViaServices = (settings) => {
           ? `${safeRemaining} (overflow ${remaining})`
           : remaining;
 
-      const emailQuota = pluralizeCountable(limit, "email");    
+      const emailQuota = pluralizeCountable(limit, "email");
 
       return `${canSend} | ${safePercent}% via ${name}: ${safeRemains} of ${emailQuota} (${rate} per second)`;
     })
@@ -498,7 +522,9 @@ const makeDailyApproveEmail = ({ date }: DailyApproveEmailOptions) => {
     "html/approvalEmail.html"
   );
 
-  const { spreadsheets: { users } } = CONFIG;
+  const {
+    spreadsheets: { users },
+  } = CONFIG;
 
   template.uri = uri;
   template.date = date;

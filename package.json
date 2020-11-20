@@ -16,7 +16,9 @@
   "author": "Oleg Valter",
   "license": "MIT",
   "devDependencies": {
+    "@types/chai": "^4.2.14",
     "@types/google-apps-script": "^1.0.14",
+    "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.2",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",

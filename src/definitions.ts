@@ -70,17 +70,15 @@
  * })} EmailSendoutConfig
  */
 
-/**
- * @typedef {({
- *  covidDataByState : Object.<string, (number | string)[]>,
- *  currentDate     ?: Date,
- *  emails          ?: EmailConfig[],
- *  indices         ?: SheetIndices,
- *  templateName     : string,
- *  timezone        ?: string,
- *  totalUS          : (string | number)[]
- * })} ApprovalSettings
- */
+declare interface ApprovalSettings {
+  covidDataByState: Record<string, (number | string)[]>;
+  currentDate?: Date;
+  emails?: EmailConfig[];
+  indices?: typeof SheetIndices;
+  templateName: string;
+  timezone?: string;
+  totalUS: (string | number)[];
+}
 
 /**
  * @typedef {{
@@ -114,9 +112,9 @@
  */
 
 declare interface ParsedCandidates {
-candidates : Candidate[],
-invalid : number,
-total : number
+  candidates: Candidate[];
+  invalid: number;
+  total: number;
 }
 
 declare interface Candidate {
