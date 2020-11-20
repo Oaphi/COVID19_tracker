@@ -1,0 +1,160 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>COVID-19 weekly report</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+</head>
+
+<body>
+
+    <table cellspacing="0" cellpadding="0" border="0" width="100%" height="100%">
+
+        <tr>
+
+            <td>
+
+                <table cellspacing="0" cellpadding="0" width="590" border="0"
+                    style="border-collapse:collapse; font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000;">
+
+                    <tr>
+
+                        <td>
+
+                            <table cellspacing="0" cellpadding="0" width="590" border="0"
+                                style="border-collapse:collapse; font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000;">
+
+                                <tr>
+
+                                    <td align="left" width="590px" valign="top" style="padding-top:20px;">
+
+                                        <span>In the latest 7-day period, reported deaths per capita accelerated in
+                                            {{acc_this_week}},
+                                            {{us_direction_this_week}}
+                                            from {{acc_last_week}} last
+                                            week.</span>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td align="left" width="590px" valign="top" style="padding-top:20px;">
+
+                                        <span>The U.S. as a whole experienced a {{us_acc_rate_over_weeks}}
+                                            {{us_direction_over_weeks}} in
+                                            reported
+                                            deaths
+                                            per
+                                            capita from
+                                            {{us_acc_rate_last_week}} in the previous 7-day
+                                            period {{us_direction_this_week}} to {{us_acc_rate_this_week}} in this most recent one.</span>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td align="left" width="590px" valign="top"
+                                        style="padding-top:20px; padding-bottom: 20px;">
+
+                                        <span>
+                                            To support vulnerable children, frontline workers, and domestic violence
+                                            victims during
+                                            the
+                                            pandemic,
+                                            please
+                                            consider
+                                            donating to these charitable partners: {{partner_list}}.
+                                        </span>
+
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>
+
+                            <table cellspacing="0" cellpadding="5px" width="490" border="1px"
+                                style="border-collapse:collapse; font-family:Verdana, Geneva, sans-serif; font-size:12px; color:#000000;">
+
+                                <tr style="font-weight: 600; height:30px">
+
+                                    <td align="center" valign="middle">
+                                        Rank
+                                    </td>
+                                    <td align="center" valign="middle">
+                                        State
+                                    </td>
+                                    <td align="center" valign="middle">
+                                        1&#8209;Week&nbsp;Deaths&nbsp;Per&nbsp;1MM&nbsp;Residents
+                                    </td>
+                                    <td align="center" valign="middle">
+                                        Week&nbsp;Over&nbsp;Week
+                                    </td>
+
+                                </tr>
+
+                                {{weekly_rows}}
+
+                            </table>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>
+
+                            <table border="0" cellspacing="0" cellpadding="0"
+                                style="border-collapse:collapse; font-family:Verdana, Geneva, sans-serif; font-size:10px; color:#000000;">
+
+                                <tr>
+
+                                    <td style="padding-top:20px">
+
+                                        <span>
+                                            Special thanks to {{covid_project_link}} for supplying my data. I try my
+                                            best to
+                                            make
+                                            these
+                                            reports useful, but I'd
+                                            fully understand if you choose to <a
+                                                href="mailto:hi@covidping.com?subject=Unsubscribe%20me%20from%20all%20all%20covidping%20emails%20please&body=The%20email%20that%20I%20subscribed%20with%20is:%20{{email}}">unsubscribe</a>
+                                            at any time.
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</body>
+
+</html>

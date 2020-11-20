@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spreadsheet Stats</title>
+</head>
+<body>
+
+    <script>
+
+        (async () => {
+
+            const { cells, numSheets } = await asyncGAPIv2({ funcName : "getSpreadsheetInfo" });
+
+            const layout = mdcUtils.createGrid();
+
+            const udataTable = mdcUtils.createDataTable({
+                parent: layout.addRow(2).getLastRow().getFirstCell(),
+                fullwidth: true,
+                headers: [{ cells: ["Stat", "Value"] }],
+                rows: [
+                    { cells : [ "Sheets", numSheets ] },
+                    { cells : [ "Cells", cells ] }
+                ]
+            });
+
+        })();
+
+    </script>
+    
+</body>
+</html>

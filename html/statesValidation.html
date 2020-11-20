@@ -1,0 +1,14 @@
+<script>
+    const validateStates = (input, states = []) => {
+        const { value } = input;
+
+        const inputStates = value.replace(/[^\sA-z]/g, " ").trim().split(/\s+/);
+
+        const validStates = inputStates.filter(s => states.includes(s));
+
+        const valid = [...new Set(validStates).values()];
+
+        input.value = valid.join(", ");
+        return input;
+    };
+</script>

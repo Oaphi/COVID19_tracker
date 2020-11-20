@@ -4,4 +4,9 @@ assets/cloud-emailing*
 
 .clasp.json
 
-ids.txt
+*.txt
+*.pem
+*.csv
+*.d.ts
+!index.d.ts
+secret*

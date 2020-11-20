@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+
+    <style>
+        .padded-left {
+            margin-left: 4%;
+        }
+
+        .padded-right {
+            margin-right: 4%;
+        }
+
+        .mdc-typography--caption {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="mdc-typography">
+
+    <form id="approval"></form>
+    <form id="amazon"></form>
+    <form id="twitter"></form>
+    <form id="analytics"></form>
+    <form id="mailchimp"></form>
+
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+    <?!= mdcUtils ?>
+    <?!= asyncGAPI ?>
+    <?!= statesValidation ?>
+
+    <script>
+
+        const identities = JSON.parse("<?= JSON.stringify(identities); ?>");
+        const settings = JSON.parse("<?= JSON.stringify(settings); ?>");
+        const stateNames = JSON.parse("<?= JSON.stringify(stateNames); ?>");
+        const quotas = JSON.parse("<?= JSON.stringify(quotas); ?>");
+        const property = "<?= property ?>";
+        const analyticsProperty = "<?= analyticsProperty ?>";
+
+        console.log({ settings, identities, stateNames, property, quotas });
+
+        const {
+            emails,
+            approval: {
+                recipient,
+                states
+            }
+        } = settings;
+
+        const saveSettings = async (path, update) => await asyncGAPIv2({
+            funcName: "updateSettings",
+            params: [{ property, settings, path, update }],
+            onSuccess: () => notification.open("Successfully Saved"),
+            onFailure: (err) => notification.open(`Failed to Save: ${err}`)
+        });
+
+        const generalSettingsLayout = mdcUtils.createGrid();
+
+        const notification = mdcUtils.createNotification({
+            parent: generalSettingsLayout.getFirstRow().getFirstCell()
+        });
+
+        (async () => {
+
+            const triggerLayout = mdcUtils.createGrid();
+
+            const generalHeader = mdcUtils.createSubtitle({
+                parent: triggerLayout.addRow().getLastRow().getFirstCell(),
+                text: "Triggers"
+            });
+
+            const triggers = await asyncGAPIv2({ funcName: "listTriggers", params: [{ safe: true }] });
+
+            const primaryTextMap = {
+                "startDailyAnalyticsUpdate": "Daily Analytics Refresh",
+                "startDailyApprovalFlow": "Daily Approval",
+                "resetDailyApprovalFlow": "Daily Seal Reset",
+                "startWeeklyArchivalFlow": "Weekly Archival",
+                "calculateStats": "Stats Recalculation",
+                "startUserStatsUpdate": "User stats recalc"
+            };
+
+            const iconMap = {
+                "CLOCK": "alarm",
+                "ON_CHANGE": "refresh"
+            };
+
+            const items = triggers.map(({ id, funcName, type }) => ({
+                icon: iconMap[JSON.parse(type)],
+                primary: primaryTextMap[funcName],
+                secondary: `Id: ${id}`
+            }));
+
+            mdcUtils.createList({
+                items,
+                parent: triggerLayout.addRow().getLastRow().getFirstCell()
+            });
+
+        })();
+
+        (async () => {
+
+            const { amazon: { overrideSafe, identity } } = emails;
+
+            const generalHeader = mdcUtils.createSubtitle({
+                parent: generalSettingsLayout.addRow().getLastRow().getFirstCell(),
+                text: "General Settings"
+            });
+
+            const sendRow = generalSettingsLayout.addRow(1, 1).getLastRow();
+
+            const sendTestButton = mdcUtils.createTextButton({
+                fullwidth: true,
+                parent: sendRow.getFirstCell(),
+                text: "Send",
+                onClick: () => asyncGAPIv2({
+                    funcName: "sendTestStateEmails",
+                    onFailure: (err) => notification.open(`Failed to send test emails: ${err}`)
+                })
+            });
+
+            const sendSandboxButton = mdcUtils.createTextButton({
+                fullwidth: true,
+                parent: sendRow.getLastCell(),
+                text: "Sandbox",
+                onClick: () => asyncGAPIv2({
+                    funcName: "sendTestStateEmails",
+                    params: [{ sandbox: true }]
+                })
+            });
+
+            const statesToConfirmInput = mdcUtils.createOutlinedMultilineField({
+                width: 60,
+                max: 224,
+                parent: generalSettingsLayout.addRow().getLastRow().getFirstCell(),
+                form: "approval",
+                name: "states",
+                label: "Test States",
+                value: states.join(", "),
+                onChange: (_, input) => {
+                    validateStates(input, stateNames);
+                    saveSettings("approval/states", input.value.split(", "));
+                }
+            });
+
+            const testRecipientInput = mdcUtils.createOutlinedField({
+                parent: generalSettingsLayout.addRow().getLastRow().getFirstCell(),
+                form: "approval",
+                name: "recipient",
+                label: "Test Recipient",
+                value: recipient,
+                onChange: (_, { value }) => saveSettings("approval/recipient", value)
+            });
+
+            const invert = (idt) => idt === "primary" ? "secondary" : "primary";
+
+            const overrideCbx = mdcUtils.createList({
+                dense: true,
+                items: [
+                    {
+                        actions: [{
+                            binary: true,
+                            form: "amazon",
+                            name: "overrideSafe",
+                            on: overrideSafe,
+                            onValue: true,
+                            offValue: false,
+                            type: mdcUtils.ActionTypes.CHECKBOX,
+                            onChange: (_, { value }) => saveSettings("emails/amazon/overrideSafe", value)
+                        }],
+                        primary: "Override safety"
+                    },
+                    {
+                        actions: [{
+                            form: "amazon",
+                            name: "identity",
+                            on: identity === "primary",
+                            onValue: "primary",
+                            offValue: "secondary",
+                            type: mdcUtils.ActionTypes.SWITCH,
+                            onChange: (ev, { value }) => saveSettings("emails/amazon/identity", value)
+                        }],
+                        primary: `Send as primary verified identity`,
+                        secondary: `Sending as ${identity}`
+                    }
+                ],
+                parent: generalSettingsLayout.addRow().getLastRow().getFirstCell(),
+            });
+
+            console.log(overrideCbx);
+
+        })();
+
+        (async () => {
+
+            const {
+                amazon: { quota, overrideSafe, lambda, identity, senderName, rate }
+            } = emails;
+
+            const forFreeTier = (q) => Math.floor(62e3 / 31);
+
+            const {
+                rate: amazonRate,
+                sent: sentToAmazon,
+                quota: quotaFromAmazon = 0
+            } = quotas;
+
+            const amazonSettingsLayout = mdcUtils.createGrid();
+
+            const amazonHeader = mdcUtils.createSubtitle({
+                parent: amazonSettingsLayout.addRow().getLastRow().getFirstCell(),
+                level: 1,
+                text: "Amazon SES"
+            });
+
+            const status = await asyncGAPIv2({ funcName: "checkAmazonStatus" });
+
+            const amazonStatus = mdcUtils.createList({
+                dense: true,
+                items: [{
+                    icon: status ? "signal_wifi_4_bar" : "signal_wifi_off",
+                    primary: `Amazon is ${status ? "online" : "offline"}`
+                }],
+                parent: amazonSettingsLayout.addRow().getLastRow().getFirstCell(),
+            });
+
+            const stats = await asyncGAPIv2({ funcName: "getAmazonStats" });
+
+            const statTable = mdcUtils.createDataTable({
+                parent: amazonSettingsLayout.addRow().getLastRow().getFirstCell(),
+                headers: [{ cells: ["Stat", "Value"] }],
+                rows: Object.entries(stats).map(([k, v]) => ({ cells: [k, v] }))
+            });
+
+            const lambdaURIfield = mdcUtils.createOutlinedMultilineField({
+                parent: amazonSettingsLayout.addRow().getLastRow().getFirstCell(),
+                label: "AWS Lambda URI",
+                form: "amazon",
+                name: "lambda",
+                width: 60,
+                height: 2,
+                value: lambda,
+                onChange: (_, { value }) => saveSettings("emails/amazon/lambda", value)
+            });
+
+            const senderField = mdcUtils.createOutlinedField({
+                fullwidth: true,
+                form: "amazon",
+                label: "Sender Name",
+                name: "senderName",
+                fullwidth : true,
+                parent: amazonSettingsLayout.addRow().getLastRow().getFirstCell(),
+                value: senderName,
+                onChange: (_, { value }) => saveSettings("emails/amazon/senderName", value)
+            });
+
+            const amazonQuota = mdcUtils.createOutlinedField({
+                form: "amazon",
+                helperText: quota <= quotaFromAmazon ?
+                    `Free daily: ${forFreeTier(quotaFromAmazon)} (${quotaFromAmazon} eligible)` :
+                    "",
+                label: "Daily quota",
+                name: "quota",
+                parent: amazonSettingsLayout.addRow(2, 2).getLastRow().getFirstCell(),
+                type: "number",
+                value: quota,
+                onChange: (_, { value }) => saveSettings("emails/amazon/quota", +value)
+            });
+
+            const amazonRateLimit = mdcUtils.createOutlinedField({
+                form: "amazon",
+                helperText: rate <= amazonRate ? `Max eligible: ${amazonRate} per second` : "",
+                label: "Rate limit",
+                name: "rate",
+                parent: amazonSettingsLayout.getLastRow().getLastCell(),
+                type: "number",
+                value: rate,
+                onChange: (_, { value }) => saveSettings("emails/amazon/rate", +value)
+            });
+
+        })();
+
+
+        const updateMailchimpSettings = (event) => {
+
+            const { forms: { mailchimp: { elements: { server, api_key, listName } } } } = document;
+
+            const settings = {
+                api_key: api_key.value,
+                server: server.value,
+                listName: listName.value
+            };
+
+            console.log(settings);
+
+            asyncGAPIv2({
+                funcName: "updateMailchimpSettings",
+                params: [settings],
+                onSuccess: () => notification.open("Updated Mailchimp API settings"),
+                onFailure: (e) => notification.open(`Failed to update Mailchimp API settings:\n${e}`)
+            });
+        };
+
+        (async () => {
+
+            const mailchimpSettingsLayout = mdcUtils.createGrid();
+
+            const { server = "", api_key = "", listName = "" } = await asyncGAPIv2({
+                funcName: "getMailchimpSettings"
+            });
+
+            const mailchimpHeader = mdcUtils.createSubtitle({
+                parent: mailchimpSettingsLayout.addRow().getLastRow().getFirstCell(),
+                text: "Mailchimp API"
+            });
+
+            const mailchimpServer = mdcUtils.createOutlinedField({
+                form: "mailchimp",
+                label: "Server",
+                name: "server",
+                parent: mailchimpSettingsLayout.addRow(1, 3).getLastRow().getFirstCell(),
+                value: server,
+                onChange: updateMailchimpSettings
+            })
+
+            const mailchimpAPIkey = mdcUtils.createOutlinedField({
+                form: "mailchimp",
+                fullwidth: true,
+                label: "API key",
+                name: "api_key",
+                parent: mailchimpSettingsLayout.getLastRow().getLastCell(),
+                value: api_key,
+                onChange: updateMailchimpSettings
+            });
+
+            const mailchimpListName = mdcUtils.createOutlinedField({
+                form: "mailchimp",
+                fullwidth: true,
+                label: "List name",
+                name: "listName",
+                parent: mailchimpSettingsLayout.addRow().getLastRow().getFirstCell(),
+                value: listName,
+                onChange: updateMailchimpSettings
+            });
+
+            const actionsRow = mailchimpSettingsLayout.addRow(1, 1, 1, 1).getLastRow();
+
+            mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Check",
+                parent: actionsRow.getCell(1),
+                onClick: () => asyncGAPIv2({
+                    funcName: "checkMemberFromSelected",
+                    onSuccess: (status) => notification.open(
+                        status ? "Contact exists" : "Contact not found"
+                    )
+                })
+            });
+
+            mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Add",
+                parent: actionsRow.getCell(2),
+                onClick: () => asyncGAPIv2({
+                    funcName: "addMemberFromSelected",
+                    onSuccess: (status) => notification.open(
+                        status ? "Added contact" : "Failed to add contact"
+                    )
+                })
+            });
+
+            mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Archive",
+                parent: actionsRow.getCell(3),
+                onClick: () => asyncGAPIv2({
+                    funcName: "deleteMemberFromSelected",
+                    onSuccess: (status) => notification.open(
+                        status ? "Archived contact" : "Failed to archive contact"
+                    )
+                })
+            });
+
+            mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Delete",
+                parent: actionsRow.getCell(4),
+                onClick: () => asyncGAPIv2({
+                    funcName: "deleteMemberFromSelected",
+                    params: [true],
+                    onSuccess: (status) => notification.open(
+                        status ? "Deleted contact" : "Failed to delete contact"
+                    )
+                })
+            });
+
+        })();
+
+
+    </script>
+
+</body>
+
+</html>

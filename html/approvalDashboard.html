@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sendpout Dashboard</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons">
+
+</head>
+
+<body>
+
+    <?!= asyncGAPI ?>
+
+    <form id="sendout">
+
+        <div class="container">
+            <div class="row">
+                <div class="col s12 input-field">
+                    <select id="states" name="states" >
+                    </select>
+                    <label>Choose State</label>
+                </div>
+                <div class="col s12">
+                    <label>
+                        <input name="sandbox" type="checkbox" checked="checked" />
+                        <span>Sandbox</span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field">
+                        <input id="email" name="recipient" type="text" class="autocomplete">
+                        <label for="email">Recipient</label>
+                        <span class="helper-text">Address to send to</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <a id="send" class="waves-effect waves-light btn">Send</a>
+                    <a id="review" class="waves-effect waves-light btn">Send Review</a>
+                    <a id="weekly" class="waves-effect waves-light btn">Send Weekly</a>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+    <script>
+
+        const hide = ({ classList }, className = "hide") => classList.add(className);
+        const show = ({ classList }, className = "hide") => classList.remove(className);
+        const notify = (msg, ...styles) => M.toast({ html: msg, classes: styles.join(" ") });
+
+        const $ = (selector) => document.querySelector(`${selector}`);
+
+        const arrToSelectOpts = (arr) => arr.map((value) => {
+
+            const opt = document.createElement("option");
+            opt.value = value;
+            opt.text = value;
+            opt.selected = false;
+            opt.disabled = false;
+
+            return opt;
+        });
+
+        window.addEventListener("unhandledrejection", ({ reason }) => {
+            notify(`Something went wrong:\n${reason}`);
+            console.error(reason);
+        });
+
+        window.addEventListener("DOMContentLoaded", async () => {
+
+            const effectiveEmail = "<?= Session.getEffectiveUser().getEmail(); ?>";
+            const email = document.querySelector("#email");
+            email.value = effectiveEmail;
+
+            const stateNames = await asyncGAPIv2({ funcName: "getStateNames" });
+
+            const states = document.querySelector("#states");
+            states.append(...arrToSelectOpts(stateNames));
+
+            M.AutoInit();
+
+            M.updateTextFields();
+
+            //const identities = getAmazonIdentities(settings);
+            const { primary, secondary } = await asyncGAPIv2({ funcName: "getAmazonIdentities" });
+
+            const to = $("#email");
+            const inst = M.Autocomplete.getInstance(to);
+            inst.updateData({
+                [primary] : null,
+                [secondary[0]]: null
+            });
+
+            const btn = document.querySelector("#send");
+            btn.addEventListener("click", async ({ target }) => {
+
+                const { forms: { sendout: { elements: { recipient, sandbox, states } } } } = document;
+
+                const options = {
+                    recipient: recipient.value,
+                    sandbox: sandbox.checked,
+                    states: [states.value]
+                };
+
+                const status = await asyncGAPIv2({
+                    funcName: "sendTestStateEmails",
+                    params: [options]
+                });
+
+                notify(status ? `Successfully sent` : `Failed to send`);
+            });
+
+            const review = document.querySelector("#review");
+            review.addEventListener("click", async ({ target }) => {
+
+                const { forms: { sendout: { elements: { recipient } } } } = document;
+
+                await asyncGAPIv2({
+                    funcName: "sendApprovalEmail",
+                    params: [{ recipient: recipient.value }]
+                });
+
+            });
+
+            const weekly = $("#weekly");
+
+            weekly.addEventListener("click", async (ev) => {
+                ev.preventDefault();
+
+                const { forms: { sendout: { elements: { recipient } } } } = document;
+
+                const status = await asyncGAPIv2({
+                    funcName: "startWeeklySendoutFlow",
+                    params: [recipient.value]
+                });
+
+                notify(status ? `Successfully sent` : `Failed to send`);
+            })
+
+        })
+
+    </script>
+
+</body>
+
+</html>

@@ -40,11 +40,10 @@
 
     <div class="mdc-layout-grid">
         <div class="mdc-layout-grid__inner">
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-2">
+            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-3">
                 <div class="mdc-chip-set mdc-chip-set--choice" role="grid">
                     <div class="mdc-chip" role="row">
                         <div class="mdc-chip__ripple"></div>
-                        <i class="material-icons mdc-chip__icon">check</i>
                         <span role="gridcell">
                             <span role="button" tabindex="0" class="mdc-chip__primary-action">
                                 <span class="mdc-chip__text">With views only</span>
@@ -53,7 +52,7 @@
                     </div>
                 </div>
             </div>
-            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-9">
                 <div id="headerFilterSet" class="mdc-chip-set mdc-chip-set--filter" role="grid">
                     <? headers.forEach((header,h) => { ?>
                     <div class="mdc-chip mdc-chip--selected" role="row">
@@ -109,8 +108,6 @@
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
     <script>
-        console.log(google.script.run, mdc);
-
         const {
             chips: { MDCChipSet },
             list: {
@@ -137,9 +134,7 @@
         const currentDate = "<?= current ?>";
 
         const currentDateIdx = tabs.findIndex(({ root }) => root.innerText === currentDate);
-        let currentlyActiveTab = currentDateIdx < 0 ? tabs.length - 1 : currentDateIdx;
-
-        console.log({ currentlyActiveTab, currentDate, tabs, nav, headersSet });
+        let currentlyActiveTab = currentDateIdx < 0 ? 0 : currentDateIdx;
 
         tabs.forEach((tab, tabIdx) => tabIdx === currentlyActiveTab ? tab.activate() : tab.deactivate());
 
@@ -177,10 +172,11 @@
             return cell;
         };
 
+        //splice out new headers
         const tabData = Object.values(JSON.parse("<?= JSON.stringify(data) ?>"));
 
         const rowsFromChunk = (tableContentElem, chunk) => {
-            chunk.forEach(({ email, code, state, uid, viewed }) => {
+            chunk.forEach(({ email, code, state, uid, total, viewed }) => {
                 const row = document.createElement("tr");
                 row.classList.add("mdc-data-table__row");
 
@@ -188,27 +184,20 @@
                 const emailCell = mdcTdMarkup({ text: email });
                 const codeCell = mdcTdMarkup({ text: code });
                 const stateCell = mdcTdMarkup({ text: state });
+                const totalCell = mdcTdMarkup({ text: total, type: "num" });
                 const viewCell = mdcTdMarkup({ text: viewed, type: "num" });
 
-                row.append(idCell, emailCell, codeCell, stateCell, viewCell);
+                row.append(idCell, emailCell, codeCell, stateCell, totalCell, viewCell);
 
                 tableContentElem.append(row);
             });
         };
 
-        const dataTables = Array.from(document.querySelectorAll(".mdc-data-table"))
-            .map((dataTable, i) => {
-
-                const [firstChunk] = tabData[currentlyActiveTab];
-
-                const tableContentElem = dataTable.querySelector(".mdc-data-table__content");
-
-                rowsFromChunk(tableContentElem, firstChunk);
-
-                const table = new MDCDataTable(dataTable);
-
-                return table;
-            });
+        const tblRoot = document.querySelector(".mdc-data-table");
+        const [firstChunk] = tabData[currentlyActiveTab];
+        const tableContentElem = tblRoot.querySelector(".mdc-data-table__content");
+        rowsFromChunk(tableContentElem, firstChunk);
+        const dataTable = new MDCDataTable(tblRoot);
 
         //set pagination for chunks
         const paginationWrapper = document.querySelector("#paginators");
@@ -270,7 +259,7 @@
 
                 const currentChunk = tabData[currentlyActiveTab][value - 1];
 
-                const tableContentElem = dataTables[0].root.querySelector(".mdc-data-table__content");
+                const tableContentElem = dataTable.root.querySelector(".mdc-data-table__content");
 
                 tableContentElem.innerHTML = "";
                 rowsFromChunk(tableContentElem, currentChunk);
@@ -281,7 +270,7 @@
 
         paginations.forEach((p, i) => hideOrShowComponent(p, "hidden", i !== currentlyActiveTab));
 
-        console.log({ hasViewsSet, dataTables, paginations });
+        console.log({ hasViewsSet, dataTable, paginations });
 
         window.addEventListener("MDCChip:selection", ({ detail }) => {
 
@@ -293,34 +282,31 @@
 
             const filteredChips = headerChips.map(chip => chip.selected);
 
-            dataTables.forEach(tabContent => {
-                const rows = tabContent.getRows();
+            const rows = dataTable.getRows();
 
-                const { headerRow } = tabContent;
+            const { headerRow } = dataTable;
 
-                const { cells: headerCells } = headerRow;
+            const { cells: headerCells } = headerRow;
 
-                Array.from(headerCells).forEach((headerCell, hc) => headerCell.hidden = !filteredChips[hc]);
+            Array.from(headerCells).forEach((headerCell, hc) => headerCell.hidden = !filteredChips[hc]);
 
-                rows.forEach(row => {
-                    const { cells } = row;
+            rows.forEach(row => {
+                const { cells } = row;
 
-                    Array.from(cells).forEach((cell, c) => cell.hidden = !filteredChips[c]);
+                Array.from(cells).forEach((cell, c) => cell.hidden = !filteredChips[c]);
 
-                    const [, email, code, state, views] = Array.from(cells).map(c => c.innerText);
+                const [, email, code, state, views] = Array.from(cells).map(c => c.innerText);
 
-                    const rowHasViews = !!(+views);
+                const rowHasViews = !!(+views);
 
-                    row.hidden = viewsChip.selected ? !rowHasViews : false;
-                });
+                row.hidden = viewsChip.selected ? !rowHasViews : false;
             });
         });
 
         window.addEventListener("MDCDataTable:sorted", ({ detail }) => {
             const { columnId, columnIndex, sortValue } = detail;
 
-            const currentTable = dataTables[currentlyActiveTab];
-            const rows = currentTable.getRows();
+            const rows = dataTable.getRows();
 
             rows.sort((a, b) => {
                 const aText = a.cells[columnIndex].innerText;
@@ -335,16 +321,15 @@
                     +bText - +aText;
             });
 
-            currentTable.root.querySelector(".mdc-data-table__content").append(...rows);
-
-            currentTable.layout();
+            dataTable.root.querySelector(".mdc-data-table__content").append(...rows);
+            dataTable.layout();
         });
 
         window.addEventListener("MDCTab:interacted", ({ detail }) => {
 
             currentlyActiveTab = tabs.findIndex(t => t.active);
 
-            const tableContentElem = dataTables[0].root.querySelector(".mdc-data-table__content");
+            const tableContentElem = dataTable.root.querySelector(".mdc-data-table__content");
             tableContentElem.innerHTML = "";
 
             paginations.forEach(slider => slider.value = 0);

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+</head>
+
+<body class="mdc-typography">
+
+    <?!= mdcUtils ?>
+
+    <script>
+
+        /** @type {{ email : string, state : string }[]} */
+        const duplicate = JSON.parse("<?= JSON.stringify(duplicate) ?>");
+
+        /** @type {object[]} */
+        const unsent = JSON.parse("<?= JSON.stringify(unsent) ?>");
+
+        const layout = mdcUtils.createGrid();
+
+        mdcUtils.createParagraph({
+            label: "Total Duplicates",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            text: "<?= duplicate.length ?> (<?= percentDupes ?>%) of <?= all.length ?> total"
+        });
+
+        mdcUtils.createParagraph({
+            label: "Total Subscribers",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            text: "<?= subscribers.length ?> unique subscribers"
+        });
+
+        mdcUtils.createParagraph({
+            label: "Total Unsent",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            text: unsent.length ? `Users left to send: ${unsent.length}` : "All sent"
+        })
+
+        const userToListItem = ({ email: primary, state: secondary }, pos) => ({ pos, primary, secondary });
+
+        if (duplicate.length) {
+            mdcUtils.createListGroup({
+                parent: layout.addRow().getLastRow().getFirstCell(),
+                label: "Duplicate Users",
+                lists: [{
+                    dense: true,
+                    type: mdcUtils.ListType.ORDERED,
+                    items: duplicate.map(userToListItem)
+                }]
+            });
+        }
+
+        mdcUtils.createListGroup({
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            label: "Unsent Users",
+            lists: [{
+                dense: true,
+                type: mdcUtils.ListType.ORDERED,
+                items: unsent.map(userToListItem)
+            }]
+        });
+
+    </script>
+
+</body>
+
+</html>

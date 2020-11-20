@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "allowJs": true,
+        "noImplicitThis": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "none",
+        "types": ["node", "google-apps-script"],
+        "target": "ES2019",
+        "lib": ["ESNext"],
+        "downlevelIteration": true,
+        "pretty": true,
+        "noImplicitUseStrict": true,
+        "experimentalDecorators": true
+    }
+}

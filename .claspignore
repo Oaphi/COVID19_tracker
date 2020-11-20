@@ -6,4 +6,9 @@
 
 **/assets/**
 
-ids.txt
+*.txt
+*.pem
+*.csv
+*.d.ts
+secret*
+*eslint*

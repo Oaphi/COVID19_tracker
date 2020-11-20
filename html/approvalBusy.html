@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprroval Busy</title>
+</head>
+
+<body>
+
+    <script>
+
+        const notifier = mdcUtils.createNotification();
+
+        mdcUtils.createParagraph({
+            text: "Someone is approving the daily send, wait a bit and try later or reset (unsafe)"
+        });
+
+        mdcUtils.createTextButton({
+            text: "Reset",
+            onClick: async () => {
+                const status = await asyncGAPIv2({
+                    funcName: "resetPersistedState"
+                });
+
+                notifier.open(status ? "Successfully reset" : "Failed to reset");
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>

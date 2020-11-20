@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandbox Dashboard</title>
+
+    <?!= mdcWeb ?>
+    <?!= mdcIcons ?>
+</head>
+
+<body>
+
+    <?!= asyncGAPI ?>
+    <?!= mdcUtils ?>
+
+    <script>
+
+        const emails = JSON.parse("<?= JSON.stringify(emails); ?>");
+
+        const layout = mdcUtils.createGrid();
+
+        const emailListRow = layout.addRow(9, 3).getLastRow();
+
+        const emailCardLayout = mdcUtils.createGrid();
+
+        const [ { message, subject } ] = emails;
+
+        const emailCard = mdcUtils.createCard({
+            content : `<h3>Subject: ${subject}</h3>${message}`,
+            parent: emailListRow.getFirstCell()
+        });
+
+        const emailList = mdcUtils.createListGroup({
+            label: "Parsed Emails",
+            fullwidth: true,
+            lists: [{
+                dense: true,
+                type: mdcUtils.ListType.ORDERED,
+                items: emails.map(({ to, subject }, i) => ({ primary: to, secondary: subject, pos: i })),
+                lines: 2,
+                onAction: ({ detail: { index } }) => {
+                    const { to, from, message } = emails[index];
+                    emailCard.setContent(message);
+                }
+            }],
+            parent: emailListRow.getLastCell()
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+</head>
+
+<body class="mdc-typography">
+    <form id="settings"></form>
+
+    <?!= stateUtils ?>
+    <?!= asyncGAPI ?>
+    <?!= mdcUtils ?>
+
+    <script>
+
+        const applySeparateTo = JSON.parse("<?= JSON.stringify(applySeparateTo); ?>");
+        const propName = "<?= property ?>";
+        const recommendedText = "<?= noData ?>";
+        const inlinePrompt = "<?= inline ?>";
+        const separatePrompt = "<?= separate ?>";
+        const subjectPrefix = "<?= subjectPrefix ?>";
+        const currDay = "<?= currDay ?>";
+        const formattedDate = "<?= formattedDate ?>";
+        const stateNames = JSON.parse("<?= JSON.stringify(stateNames); ?>");
+
+        const emphasizeSelectedText = ({
+            element,
+            type = "italic",
+            target = "_self",
+            link
+        }) => {
+
+            const emphasis = new Map([
+                ["italic", "em"],
+                ["bold", "strong"],
+                ["link", "a"],
+                ["underline", "u"],
+                ["strike", "s"]
+            ]);
+
+            const tag = emphasis.get(type);
+
+            if (!tag) {
+                return element;
+            }
+
+            const linkAttrs = type === "link" ? ` target="${target}" href="${link}"` : "";
+
+            const { selectionStart, selectionEnd, value } = element;
+
+            const selected = value.slice(selectionStart, selectionEnd);
+
+            element.value = value.replace(selected, `<${tag}${linkAttrs}>${selected}</${tag}>`);
+
+            return element;
+        };
+
+        const layout = mdcUtils.createGrid();
+
+        const saveNotification = mdcUtils.createNotification({
+            parent: layout.addRow().getLastRow().getFirstCell()
+        });
+
+        const persistSettings = (event) => {
+            event.preventDefault();
+
+            const { settings: { elements: {
+                applySeparateTo,
+                inline,
+                separate,
+                subjectPrefix
+            } } } = document.forms;
+
+            const settings = {
+                inline: inline.value,
+                separate: separate.value,
+                subjectPrefix: subjectPrefix.value,
+                applySeparateTo: applySeparateTo.value ? applySeparateTo.value.split(", ") : []
+            }; 
+
+            console.log(settings);
+
+            asyncGAPIv2({
+                funcName: "persistSettings",
+                params: [propName, settings],
+                onSuccess: () => saveNotification.open("Successfully saved"),
+                onFailure: () => saveNotification.open(`Failed to save: ${error}`)
+            });
+        };
+
+        const constantSubject = `COVID-19 daily report: ${currDay} ${formattedDate}`;
+
+        const subjCosntant = mdcUtils.createParagraph({
+            label: "Subject Preview",
+            text: `${subjectPrefix}${constantSubject}`,
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            level: 1
+        });
+
+        const subjectField = mdcUtils.createOutlinedField({
+            label: "Subject Prefix",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            form: "settings",
+            name: "subjectPrefix",
+            value: subjectPrefix,
+            onChange: (e) => {
+                const { value } = subjectField;
+                subjCosntant.text = `${value}${constantSubject}`;
+                persistSettings(e);
+            }
+        });
+
+        const { element: recommended } = mdcUtils.createParagraph({
+            label: "Recommended prompt",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            level: 1,
+            text: recommendedText
+        });
+
+        const useItBtn = mdcUtils.createTextButton({
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            text: "Use It",
+            onClick: (event) => {
+                inlineField.value = recommendedText;
+                inlineField.focus();
+                persistSettings(event);
+            },
+            iconAfter: "south"
+        });
+
+        const inlineField = mdcUtils.createOutlinedMultilineField({
+            fullwidth: true,
+            label: "Inline Notice",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            form: "settings",
+            name: "inline",
+            lines : 2,
+            value: inlinePrompt,
+            onChange: persistSettings
+        });
+
+        const boldLayoutCell = layout.addRow().getLastRow().getCell(1);
+        const linkLayoutCell = layout.getLastRow().getCell(2);
+
+        let separatePreview;
+
+        const separateField = mdcUtils.createOutlinedField({
+            fullwidth: true,
+            label: "Separate Notice",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            form: "settings",
+            name: "separate",
+            multiline: true,
+            lines: 5,
+            value: separatePrompt,
+            onChange: (event, input) => {
+                separatePreview.html = input.value;
+                persistSettings(event);
+            }
+        });
+
+        const bold = mdcUtils.createTextButton({
+            parent: boldLayoutCell,
+            text: "B",
+            onClick: (event) => {
+                emphasizeSelectedText({
+                    element: separateField.input_,
+                    type: "bold"
+                });
+
+                separatePreview.html = separateField.value;
+
+                separateField.focus();
+                persistSettings(event);
+            }
+            //TODO: remove reference to underscored variable
+        });
+
+        const link = mdcUtils.createTextButton({
+            parent: linkLayoutCell,
+            icon: "link",
+            onClick: (event) => {
+                emphasizeSelectedText({
+                    element: separateField.input_,
+                    type: "link",
+                    link: "https://covidping.com"
+                });
+
+                separatePreview.html = separateField.value;
+
+                separateField.focus();
+                persistSettings(event);
+            }
+        });
+
+        const statesToApplySeparate = mdcUtils.createOutlinedMultilineField({
+            width: 60,
+            max: 224,
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            form: "settings",
+            name: "applySeparateTo",
+            label: "Apply To",
+            value: applySeparateTo.join(", "),
+            onChange: (event, input) => {
+                validateStates(input, stateNames);
+                persistSettings(event);
+            }
+        });
+
+        separatePreview = mdcUtils.createParagraph({
+            label: "Separate Prompt Preview",
+            level: 2,
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            html: separatePrompt
+        });
+
+        const resetBtn = mdcUtils.createTextButton({
+            text: "Clear",
+            parent: layout.addRow().getLastRow().getFirstCell(),
+            onClick: (event) => {
+                [subjectField, inlineField, separateField, statesToApplySeparate].forEach(f => f.value = "");
+                persistSettings(event);
+            }
+        });
+
+    </script>
+</body>
+
+</html>

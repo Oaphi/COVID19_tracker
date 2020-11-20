@@ -1,0 +1,24 @@
+<script>
+    const asyncGAPIv2 = ({
+        funcName,
+        onFailure = console.error,
+        onSuccess,
+        params = []
+    }) => {
+
+        console.log(funcName, params);
+
+        return new Promise((res, rej) => {
+            google.script.run
+                .withSuccessHandler(data => {
+                    typeof onSuccess === "function" && onSuccess(data);
+                    res(data);
+                })
+                .withFailureHandler(error => {
+                    typeof onFailure === "function" && onFailure(error);
+                    rej(error);
+                })
+            [funcName].apply(null, params);
+        });
+    };
+</script>

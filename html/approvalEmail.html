@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Approval Email</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+
+<body>
+
+    <form action="<?= `${uri}?approve=true&date=${toISOdate(date)};` ?>">
+
+        <label>Reported no data</label>
+        <p><?= nodata ?></p>
+
+        <p>Please check <a href="<?= usersURL; ?>" target="_blank" referrerpolicy="no-referrer" rel="noreferrer">manual
+                unsubscribers</a></p>
+
+        <p>Please approve daily send:</p>
+        <button type="submit">
+            Approve
+        </button>
+    </form>
+
+
+</body>
+
+</html>

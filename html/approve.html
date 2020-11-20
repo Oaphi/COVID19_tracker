@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Approve</title>
+
+    <?!= mdcWeb ?>
+    <?!= mdcIcons ?>
+</head>
+
+<body>
+
+    <?!= asyncGAPI ?>
+    <?!= mdcUtils ?>
+
+    <script>
+
+        /**
+         * @summary gets column index from A1 notation
+         * @param {string} a1 
+         * @param {("column"|"row")} [type]
+         * @returns {number}
+         */
+        const getIndexFromA1 = (a1, type = "column") => {
+
+            if (!a1) {
+                throw new RangeError(`Expected A1 notation`);
+            }
+
+            const alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+            const [, cellChars, rowNumber] = a1.match(/^([A-Z]+)(?=(\d+)|$)/i) || [];
+
+            if (!cellChars) {
+                throw new RangeError(`Expected correct A1 notation, actual: ${a1}`);
+            }
+
+            if (type === "row") {
+                return rowNumber - 1;
+            }
+
+            const lcaseChars = cellChars.toLowerCase().split("").reverse();
+            const middle = lcaseChars.reduce((acc, cur, i) => {
+                return acc + (alphabet.indexOf(cur) + 1) * (i > 0 ? 26 ** i : 1);
+            }, 0);
+
+            return middle - 1;
+        };
+
+        const date = <?= sendoutDate ?>;
+
+        (async () => {
+
+            const layout = mdcUtils.createGrid();
+
+            const headingRow = layout.addRow(1, 10, 1).getLastRow();
+
+            mdcUtils.createHeading({
+                align: mdcUtils.AlignmentTypes.CENTER,
+                parent: headingRow.getMedianCell(),
+                text: `Approving for ${new Date(date).toLocaleDateString()}`,
+                level: 4
+            });
+
+            const dailyTableRow = layout.addRow(1,10,1).getLastRow();
+
+            const colIndices = ["B", "C", "AR", "AS", "AK", "AL"].map(getIndexFromA1);
+
+            const data = JSON.parse(await asyncGAPIv2({ funcName: "getStatsHtmlServiceSafe" }));
+
+            console.log(data);
+
+            const testsRows = data.map((row) => ({ cells: colIndices.map(i => row[i]) }));
+
+            console.log(testsRows);
+
+            mdcUtils.createDataTable({
+                parent: dailyTableRow.getMedianCell(),
+                //formats : [ "@", "@", "#.##" ],
+                headers: [{ cells: ["Code", "State", "Infections/Tests", "Rank", "Tests per 1MM", "Rank"] }],
+                rows: testsRows
+            });
+
+        })();
+
+    </script>
+
+</body>
+
+</html>

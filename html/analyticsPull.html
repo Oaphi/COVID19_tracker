@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <?!= mdcWeb ?>
+    <?!= mdcIcons ?>
+</head>
+
+<body class="mdc-typography">
+
+    <?!= asyncGAPI ?>
+    <?!= mdcUtils ?>
+
+    <script>
+
+        const notification = mdcUtils.createNotification();
+
+        const saveSettings = async (path, update) => await asyncGAPIv2({
+            funcName: "updateSettings",
+            params: [{ path, update }],
+            onSuccess: () => notification.open("Successfully Saved"),
+            onFailure: (err) => notification.open(`Failed to Save: ${err}`)
+        });
+
+        /**
+         * @param {number[]} statusCodes
+         */
+        const getStatuses = (statusCodes) => ({
+            succeeded: statusCodes.reduce((a, c) => c === 200 ? a + 1 : a, 0),
+            missing: statusCodes.reduce((a, c) => c === 400 ? a + 1 : a, 0),
+            ratelimit: statusCodes.reduce((a, c) => c === 429 ? a + 1 : a, 0),
+            errored: statusCodes.reduce((a, c) => c === 500 ? a + 1 : a, 0)
+        });
+
+        const statusMsgMap = new Map([
+            ["succeeded", "succeeded"],
+            ["missing", "not in GA yet"],
+            ["ratelimit", "rate limit exceeded"],
+            ["errored", "encountered an error"],
+        ]);
+
+        /**
+         * @param {number[]} statusCodes
+         */
+        const processStatusCodes = (statusCodes, statusElem) => {
+
+            const results = getStatuses(statusCodes);
+
+            const prompts = Object
+                .entries(results)
+                .map(([type, number]) => `${number} ${statusMsgMap.get(type)}`)
+                .join("<br>");
+
+            statusElem.html = prompts;
+
+            console.log(results, prompts);
+        };
+
+        const withInterval = async ({
+            interval = 4,
+            callback,
+            times = 1,
+            stopIf = () => false
+        }) => {
+            if (!times) {
+                return;
+            }
+
+            const result = await callback();
+
+            if (stopIf(result)) {
+                return result;
+            }
+
+            return new Promise((res, rej) => {
+
+                const timesLeft = times - 1;
+
+                setTimeout(
+                    () => withInterval({
+                        interval,
+                        callback,
+                        times: timesLeft,
+                        stopIf
+                    }).then(res).catch(rej),
+                    interval);
+            });
+        };
+
+        (async () => {
+
+            const pullState = await asyncGAPIv2({ funcName: "getPullState" });
+
+            let { start, interval } = pullState;
+
+            const { unique } = JSON.parse("<?= JSON.stringify( users ); ?>");
+
+            const settings = await asyncGAPIv2({ funcName: "getTrackingSettings" });
+
+            const state = {
+                ...pullState,
+                ...settings,
+                sorted: false,
+                pullable: true,
+                start() { this.pullable = true; },
+                stop() { this.pullable = false; },
+                stopIf(condition) { !!condition && this.stop(); },
+                startIf(condition) { !!condition && this.start(); }
+            };
+
+            const { startFrom, endAt, usersPerChunk, sortOn, gaId, viewId } = settings;
+
+            console.log({ state, settings, sortOn });
+
+            const layout = mdcUtils.createGrid();
+
+            const mainSettingsRow = layout.addRow(2, 2).getLastRow();
+
+            mdcUtils.createOutlinedField({
+                fullwidth: true,
+                form: "analytics",
+                name: "gaId",
+                label: "Analytics Id",
+                parent: mainSettingsRow.getFirstCell(),
+                value: gaId,
+                onChange: (_, { value }) => saveSettings("analytics/gaId", value)
+            });
+
+            mdcUtils.createOutlinedField({
+                fullwidth: true,
+                form: "analytics",
+                name: "viewId",
+                label: "View Id",
+                parent: mainSettingsRow.getLastCell(),
+                value: viewId,
+                onChange: (_, { value }) => saveSettings("analytics/viewId", value)
+            });
+
+            mdcUtils.createOutlinedField({
+                fullwidth: true,
+                parent: layout.addRow().getLastRow().getCell(1),
+                type: "date",
+                form: "analytics",
+                name: "endAt",
+                label: "End At",
+                value: endAt,
+                onChange: (_, { value }) => saveSettings("analytics/endAt", value)
+            });
+
+            mdcUtils.createOutlinedField({
+                fullwidth: true,
+                parent: layout.addRow().getLastRow().getCell(1),
+                type: "date",
+                form: "analytics",
+                label: "Start from",
+                name: "startFrom",
+                value: startFrom,
+                onChange: (_, { value }) => saveSettings("analytics/startFrom", value)
+            });
+
+            const pullSortRowOptsRow = layout.addRow(2, 2).getLastRow();
+
+            mdcUtils.createOutlinedField({
+                parent: pullSortRowOptsRow.getCell(1),
+                type: "number",
+                label: "Users/pull",
+                form: "analytics",
+                name: "usersPerChunk",
+                value: usersPerChunk,
+                onChange: async (_, { value }) => {
+                    state.usersPerChunk = +value;
+                    await saveSettings("analytics/usersPerChunk", +value);
+                }
+            });
+
+            mdcUtils.createOutlinedField({
+                parent: pullSortRowOptsRow.getCell(2),
+                type: "number",
+                label: "Sort on",
+                form: "analytics",
+                name: "sortOn",
+                value: sortOn,
+                onChange: async (_, { value }) => {
+                    state.sortOn = +value;
+                    await saveSettings("analytics/sortOn", +value);
+                }
+            });
+
+            const statusRow = layout.addRow().getLastRow();
+            const statsRow = layout.addRow().getLastRow();
+            const barRow = layout.addRow().getLastRow();
+            const notifRow = layout.addRow().getLastRow();
+
+            const notification = mdcUtils.createNotification({
+                parent: notifRow.getFirstCell()
+            });
+
+            const tablesDict = {};
+
+            const cleanUdata = mdcUtils.createTextButton({
+                icon: "refresh",
+                parent: layout.addRow().getLastRow().getFirstCell(),
+                text: "Clear",
+                onClick: () => tablesDict["udata"].clear()
+            });
+
+            const udataTable = mdcUtils.createDataTable({
+                parent: layout.addRow().getLastRow().getFirstCell(),
+                fullwidth: true,
+                headers: [{ cells: ["Date", "Views"] }],
+                rows: []
+            });
+
+            tablesDict["udata"] = udataTable;
+
+            const statusInit = "Ready to pull data";
+
+            const pullStatus = mdcUtils.createParagraph({
+                label: "Pull status",
+                parent: statusRow.getFirstCell(),
+                text: statusInit
+            });
+
+            const getStatsText = (s, e) => `Pulled ${s > e ? e : s} from ${e} (${s > e ? 100 : Math.round(s / e * 100)}%)`;
+
+            const { length } = unique;
+
+            const stats = mdcUtils.createParagraph({
+                text: getStatsText(start, length),
+                parent: statsRow.getFirstCell()
+            });
+
+            const pullProgress = mdcUtils.createProgressBar({
+                start,
+                step: usersPerChunk,
+                max: length,
+                label: "Pull progress",
+                parent: barRow.getFirstCell()
+            });
+
+            const buttonDict = new Map();
+
+            const Timer = {
+                max: 0,
+                min: 0,
+                end(cbk) {
+                    this.stop();
+                    const { curr, min, max } = this;
+
+                    cbk(min, max, max - min);
+
+                    this.min = 0;
+                    this.max = 0;
+                },
+                start() {
+                    this.min = Date.now();
+                    this.max = 0;
+                },
+                stop() {
+                    const { max } = this;
+                    max === 0 && (this.max = Date.now());
+                },
+                took() {
+                    const { min, max } = this;
+                    return Math.round((max - min) / 1000);
+                }
+            };
+
+            const pullAnalytics = async (state) => await withInterval({
+                stopIf: () => !state.pullable,
+                times: Infinity,
+                interval,
+                callback: async () => {
+
+                    if (start >= length) {
+                        notification.open("All users pulled in!");
+
+                        await asyncGAPIv2({
+                            funcName: "sortAnalyticsData",
+                            params: [{ sortOn: state.sortOn }],
+                            onSuccess: () => {
+                                notification.open("Successfully sorted");
+                                state.sorted = true;
+                            }
+                        });
+
+                        await asyncGAPIv2({
+                            funcName: "updateTotalGA",
+                            onSuccess: () => notification.open("Updated daily engagement"),
+                            onFailure: () => notification.open("Failed to get daily engagement")
+                        });
+
+                        return state.stop();
+                    }
+
+                    const end = start + state.usersPerChunk;
+
+                    Timer.start();
+
+                    const slice = unique.slice(start, end);
+
+                    const codes = await asyncGAPIv2({
+                        funcName: "updateAnalyticsData",
+                        params: [{ users: slice }]
+                    });
+
+                    processStatusCodes(codes, pullStatus);
+
+                    pullProgress.increment();
+
+                    pullState.start = end;
+
+                    const updated = await asyncGAPIv2({
+                        funcName: "setPullState",
+                        params: [{ updates: { start: end } }]
+                    });
+
+                    Timer.stop();
+
+                    stats.text = getStatsText(end, length);
+
+                    start = end;
+
+                    Timer.end(() => notification.open(`Pulled in ${Timer.took()}s`));
+                }
+            });
+
+            const pullSortRow = layout.addRow(2, 2).getLastRow();
+
+            const pullBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Users",
+                parent: pullSortRow.getCell(1),
+                onClick: async () => await asyncGAPIv2({
+                    funcName: "pullAnalyticsUsers",
+                    onSuccess: () => notification.open("Successfully updated users")
+                })
+            });
+
+            const sortBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Sort",
+                parent: pullSortRow.getCell(2),
+                onClick: async () => await asyncGAPIv2({
+                    funcName: "sortAnalyticsData",
+                    params: [{ sortOn: state.sortOn }],
+                    onSuccess: () => notification.open("Successfully sorted")
+                })
+            });
+
+            const actionsRow = layout.addRow(2, 2, 2, 2, 2, 2, 12).getLastRow();
+
+            const startBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Start",
+                parent: actionsRow.getCell(1),
+                onClick: async () => {
+                    state.start();
+                    await pullAnalytics(state);
+                }
+            });
+
+            const stopBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Stop",
+                parent: actionsRow.getCell(2),
+                onClick: () => {
+                    state.stop();
+                    notification.open("Successfully stopped!");
+                }
+            });
+
+            const nxtBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Next",
+                parent: actionsRow.getCell(3),
+                onClick: async () => {
+                    state.start();
+                    pullAnalytics(state); //do not await (resolves after all done)
+                    state.stop();
+                }
+            });
+
+            const findBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Find",
+                parent: actionsRow.getCell(4),
+                onClick: async () => {
+                    udataTable.clear();
+
+                    const { entries, codes } = await asyncGAPIv2({ funcName: "getAnalyticsFromActive" });
+
+                    entries.forEach(entry => {
+                        entry.pop();
+                        udataTable.clear();
+                        udataTable.addRows(entry);
+                    });
+                }
+            });
+
+            const dailyPercentBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Totals",
+                parent: actionsRow.getCell(5),
+                onClick: async (ev) => await asyncGAPIv2({
+                    funcName: "updateTotalGA",
+                    onSuccess: () => notification.open("Updated daily engagement"),
+                    onFailure: () => notification.open("Failed to get daily engagement")
+                })
+            });
+
+            const analyticsReset = async (ev) => {
+
+                state.stop();
+
+                const [status, updated] = await Promise.all([
+                    asyncGAPIv2({ funcName: "resetAnalyticsData" }),
+                    asyncGAPIv2({
+                        funcName: "setPullState",
+                        params: [{ old: pullState, updates: { start: 0 } }]
+                    })
+                ]);
+
+                start = updated.start;
+
+                stats.text = getStatsText(0, length);
+
+                pullStatus.html = statusInit;
+                pullProgress.hardReset();
+
+                notification.open("Successfully reset!");
+            };
+
+            const cycleBtn = mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Cycle",
+                parent: actionsRow.getCell(6),
+                onClick: async (ev) => {
+                    await analyticsReset(ev);
+
+                    await asyncGAPIv2({ funcName: "pullAnalyticsUsers" });
+
+                    state.start();
+
+                    await pullAnalytics(state);
+                }
+            });
+
+            mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Reset",
+                parent: actionsRow.getCell(7),
+                onClick: async (ev) => await analyticsReset(ev)
+            });
+
+            mdcUtils.createTextButton({
+                fullwidth: true,
+                text: "Dashboard",
+                parent: layout.addRow().getLastRow().getCell(1),
+                onClick: async () => await asyncGAPIv2({ funcName: "promptEmailTracking" })
+            });
+
+        })();
+
+    </script>
+</body>
+
+</html>
