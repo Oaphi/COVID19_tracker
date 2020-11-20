@@ -146,18 +146,15 @@ const promptGeneralSettings = () => {
 
 /**
  * @summary prompts current subject
- * @param {{
- *  prefix : string,
- *  state : string,
- *  stateNamesMap : Object.<string,string>
- * }}
- * @returns {string}
  */
 const promptCurrentSubject = ({
   state,
   stateNamesMap = getStateCodeToNameMap(),
   prefix = "",
-}) => {
+}: {
+    prefix: string;
+    state: string; stateNamesMap: { [s: string]: string; };
+  }): string => {
   const {
     sheets: { covid19 },
   } = CONFIG;

@@ -4,6 +4,8 @@ assets/cloud-emailing*
 
 .clasp.json
 
+.clasprc.json
+
 *.txt
 *.pem
 *.csv
