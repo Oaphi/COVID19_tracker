@@ -7,11 +7,15 @@ declare interface EmailConfig {
 
 /**
  * @summary fills template and sends out emails
- * @returns {boolean}
  */
 function handleApproval(
   candidate: Candidate,
-  {
+  logger = new LogAccumulator("email parser"),
+  approvalConfig: ApprovalConfig,
+  sandboxed: boolean,
+  noDataStates: string[]
+) {
+  const {
     accumulated,
     emails,
     covidDataByState,
@@ -19,21 +23,20 @@ function handleApproval(
     indices,
     notices,
     subjectPrefix,
-    template,
+    template: tmpl,
     totalUS,
     weekday,
-  }: ApprovalConfig,
-  sandboxed: boolean,
-  noDataStates: string[]
-) {
-  const { state } = candidate;
+    columnLookup,
+  } = approvalConfig;
 
-  const stateData = covidDataByState[state];
+  const { state: stateCode } = candidate;
+
+  const stateData = covidDataByState[stateCode];
 
   if (!stateData) {
     const { email, name } = candidate;
     const ui = SpreadsheetApp.getUi();
-    ui.alert(`No state found:\n\nUser: ${name}, ${email}\nState: ${state}`);
+    ui.alert(`No state found:\n\nUser: ${name}, ${email}\nState: ${stateCode}`);
     return false;
   }
 
@@ -41,89 +44,80 @@ function handleApproval(
     Covid19: { ColumnIndices: CCI },
   } = indices;
 
-  template.countryTES0 = prop(accumulated, "countryTES0", () =>
+  tmpl.countryTES0 = prop(accumulated, "countryTES0", () =>
     addCommas(totalUS[23])
   );
-  template.countryINF0 = prop(accumulated, "countryINF0", () =>
+  tmpl.countryINF0 = prop(accumulated, "countryINF0", () =>
     addCommas(totalUS[3])
   );
-  template.countryINF1cmp = prop(accumulated, "countryINF1cmp", () =>
+  tmpl.countryINF1cmp = prop(accumulated, "countryINF1cmp", () =>
     addCommas(totalUS[5])
   );
-  template.countryINF2cmp = prop(accumulated, "countryINF2cmp", () =>
+  tmpl.countryINF2cmp = prop(accumulated, "countryINF2cmp", () =>
     addCommas(totalUS[7])
   );
-  template.countryDEA0 = prop(accumulated, "countryDEA0", () =>
+  tmpl.countryDEA0 = prop(accumulated, "countryDEA0", () =>
     addCommas(totalUS[13])
   );
-  template.countryDEA1cmp = prop(accumulated, "countryDEA1cmp", () =>
+  tmpl.countryDEA1cmp = prop(accumulated, "countryDEA1cmp", () =>
     addCommas(totalUS[15])
   );
-  template.countryDEA2cmp = prop(accumulated, "countryDEA2cmp", () =>
+  tmpl.countryDEA2cmp = prop(accumulated, "countryDEA2cmp", () =>
     addCommas(totalUS[17])
   );
-  template.countryTES1cmp = prop(accumulated, "countryTES1cmp", () =>
+  tmpl.countryTES1cmp = prop(accumulated, "countryTES1cmp", () =>
     addCommas(totalUS[25])
   );
-  template.countryTES2cmp = prop(accumulated, "countryTES2cmp", () =>
+  tmpl.countryTES2cmp = prop(accumulated, "countryTES2cmp", () =>
     addCommas(totalUS[27])
-  );
-  template.countryTOTinf = prop(accumulated, "countryTOTinf", () =>
-    addCommas(totalUS[28])
-  );
-  template.countryTOTdea = prop(accumulated, "countryTOTdea", () =>
-    addCommas(totalUS[30])
-  );
-  template.countryTOTtes = prop(accumulated, "countryTOTtes", () =>
-    addCommas(totalUS[32])
   );
 
   const countryTestsPercent1 = prop(accumulated, "countryTestsPercent1", () =>
     topercent(totalUS[24])
   );
-  template.countryTES1val = GreenRed2(countryTestsPercent1)[1];
-  template.countryTES1clr = "color:" + GreenRed2(countryTestsPercent1)[0];
+  tmpl.countryTES1val = GreenRed2(countryTestsPercent1)[1];
+  tmpl.countryTES1clr = "color:" + GreenRed2(countryTestsPercent1)[0];
 
   const countryTestsPercent2 = prop(accumulated, "countryTestsPercent2", () =>
     topercent(totalUS[26])
   );
-  template.countryTES2val = GreenRed2(countryTestsPercent2)[1];
-  template.countryTES2clr = "color:" + GreenRed2(countryTestsPercent2)[0];
+  tmpl.countryTES2val = GreenRed2(countryTestsPercent2)[1];
+  tmpl.countryTES2clr = "color:" + GreenRed2(countryTestsPercent2)[0];
 
   const countryInfectionsPercent1 = prop(
     accumulated,
     "countryInfectionsPercent1",
     () => topercent(totalUS[4])
   );
-  template.countryINF1val = RedGreen2(countryInfectionsPercent1)[1];
-  template.countryINF1clr = "color:" + RedGreen2(countryInfectionsPercent1)[0];
+  tmpl.countryINF1val = RedGreen2(countryInfectionsPercent1)[1];
+  tmpl.countryINF1clr = "color:" + RedGreen2(countryInfectionsPercent1)[0];
 
   const countryInfectionsPercent2 = prop(
     accumulated,
     "countryInfectionsPercent2",
     () => topercent(totalUS[6])
   );
-  template.countryINF2val = GreenRed2(countryInfectionsPercent2)[1];
-  template.countryINF2clr = "color:" + RedGreen2(countryInfectionsPercent2)[0];
+  tmpl.countryINF2val = GreenRed2(countryInfectionsPercent2)[1];
+  tmpl.countryINF2clr = "color:" + RedGreen2(countryInfectionsPercent2)[0];
 
   const countryDeathspercent1 = prop(accumulated, "countryDeathspercent1", () =>
     topercent(totalUS[14])
   );
-  template.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
-  template.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
+  tmpl.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
+  tmpl.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
 
   const countryDeathsPercent2 = prop(accumulated, "countryDeathsPercent2", () =>
     RedGreen2(topercent(totalUS[16]))
   );
-  template.countryDEA2val = countryDeathsPercent2[1];
-  template.countryDEA2clr = "color:" + countryDeathsPercent2[0];
+  tmpl.countryDEA2val = countryDeathsPercent2[1];
+  tmpl.countryDEA2clr = "color:" + countryDeathsPercent2[0];
 
   const countryRatioInfectedToTests = prop(
     accumulated,
     "countryRatioInfectedToTests",
     () => topercent(totalUS[43])
   );
-  template.countryRatioInfectedToTests = countryRatioInfectedToTests;
+  tmpl.countryRatioInfectedToTests = countryRatioInfectedToTests;
 
   var fullStateName = stateData[2];
 
@@ -133,27 +127,29 @@ function handleApproval(
     () => ` ${toScriptDateString(currentDate, false)}`
   );
 
-  template.fulldate = weekday;
-  template.FullStatee = fullStateName;
-  template.Statee = state;
+  tmpl.fulldate = weekday;
 
-  const cachedStateData = accumulated[state];
+  const cachedStateData = accumulated[stateCode];
 
-  const isND = noDataStates.includes(state);
+  const isND = noDataStates.includes(stateCode);
 
   if (!cachedStateData) {
     const noDataDefault = 0;
 
     const { inline, separate, applySeparateTo } = notices;
 
-    template.inlineNotice = inline;
+    tmpl.inlineNotice = inline;
 
-    template.separateNotice =
-      separate && (!applySeparateTo.length || applySeparateTo.includes(state))
+    tmpl.separateNotice =
+      separate &&
+      (!applySeparateTo.length || applySeparateTo.includes(stateCode))
         ? createTemplateRow(separate)
         : "";
 
-    template.twitterLink = LoadTwitter(stateData, formattedDate);
+    tmpl.twitterLink = LoadTwitter(stateData, formattedDate);
+
+    tmpl.FullStatee = fullStateName;
+    tmpl.Statee = stateCode;
 
     const stateTestPercent1 = topercent(stateData[24]);
     const stateTestPercent2 = topercent(stateData[26]);
@@ -183,93 +179,128 @@ function handleApproval(
       isND ? noDataDefault : stateDeathspercent2
     );
 
-    template.stateDEA1val = newDeathVal;
-    template.stateDEA2val = weeklyDeathVal;
-    template.stateTES1val = newTestVal;
-    template.stateTES2val = weeklyTestVal;
-    template.stateINF1val = newInfectsVal;
-    template.stateINF2val = weeklyInfectsVal;
+    tmpl.stateDEA1val = newDeathVal;
+    tmpl.stateDEA2val = weeklyDeathVal;
+    tmpl.stateTES1val = newTestVal;
+    tmpl.stateTES2val = weeklyTestVal;
+    tmpl.stateINF1val = newInfectsVal;
+    tmpl.stateINF2val = weeklyInfectsVal;
 
-    template.stateDEA1clr = `color:${newDeathColor}`;
-    template.stateDEA2clr = `color:${weeklyDeathColor}`;
-    template.stateTES1clr = `color:${newTestColor}`;
-    template.stateTES2clr = `color:${weeklyTestColor}`;
-    template.stateINF1clr = `color:${newInfectsColor}`;
-    template.stateINF2clr = `color:${weeklyInfectsColor}`;
+    tmpl.stateDEA1clr = `color:${newDeathColor}`;
+    tmpl.stateDEA2clr = `color:${weeklyDeathColor}`;
+    tmpl.stateTES1clr = `color:${newTestColor}`;
+    tmpl.stateTES2clr = `color:${weeklyTestColor}`;
+    tmpl.stateINF1clr = `color:${newInfectsColor}`;
+    tmpl.stateINF2clr = `color:${weeklyInfectsColor}`;
 
-    template.TESstatement = buildStatement(
-      state,
+    tmpl.TESstatement = buildStatement(
+      stateCode,
       stateData[37],
       stateData[36],
       "test",
       stateData[32]
     );
 
-    template.INFstatement = buildStatement(
-      state,
+    tmpl.INFstatement = buildStatement(
+      stateCode,
       stateData[39],
       stateData[38],
       "positive test",
       stateData[28]
     );
 
-    template.DEAstatement = buildStatement(
-      state,
+    tmpl.DEAstatement = buildStatement(
+      stateCode,
       stateData[41],
       stateData[40],
       "death",
       stateData[30]
     );
 
-    template.stateINF0 = addCommas(stateData[3]);
+    tmpl.stateINF0 = addCommas(stateData[3]);
 
-    template.stateINF1cmp = addCommas(stateData[5]);
+    tmpl.stateINF1cmp = addCommas(stateData[5]);
 
-    template.stateINF2 = addCommas(stateData[5]);
-    template.stateINF2cmp = addCommas(stateData[7]);
+    tmpl.stateINF2 = addCommas(stateData[5]);
+    tmpl.stateINF2cmp = addCommas(stateData[7]);
 
-    template.stateDEA0 = addCommas(stateData[13]);
-    template.stateDEA1cmp = addCommas(stateData[15]);
+    tmpl.stateDEA0 = addCommas(stateData[13]);
+    tmpl.stateDEA1cmp = addCommas(stateData[15]);
 
-    template.stateDEA2 = addCommas(stateData[15]);
-    template.stateDEA2cmp = addCommas(stateData[17]);
+    tmpl.stateDEA2 = addCommas(stateData[15]);
+    tmpl.stateDEA2cmp = addCommas(stateData[17]);
 
-    template.stateTES0 = addCommas(stateData[23]);
+    tmpl.stateTES0 = addCommas(stateData[23]);
 
-    template.stateTES1cmp = addCommas(stateData[25]);
+    tmpl.stateTES1cmp = addCommas(stateData[25]);
 
-    template.stateTES2 = addCommas(stateData[25]);
-    template.stateTES2cmp = addCommas(stateData[27]);
+    tmpl.stateTES2 = addCommas(stateData[25]);
+    tmpl.stateTES2cmp = addCommas(stateData[27]);
 
-    template.INF2statement = buildInfectionsByTestsRatio({
-      state,
+    tmpl.INF2statement = buildInfectionsByTestsRatio({
+      state: stateCode,
       rankDaily: stateData[CCI.InfectionsToTests.dailyRank],
       ratioDaily: toIntOrFloatPercent(stateData[CCI.InfectionsToTests.daily]),
       rankWeekly: stateData[CCI.InfectionsToTests.weeklyRank],
       ratioWeekly: toIntOrFloatPercent(stateData[CCI.InfectionsToTests.weekly]),
     });
 
-    accumulated[state] = template.evaluate().getContent();
+    const content = tmpl.evaluate().getContent();
+
+    const {
+      us: { Hospitalizedcurrently: hospUSidx },
+      state: { Hospitalizedcurrently: hospStateIdx },
+    } = columnLookup;
+
+    const { raw } = approvalConfig;
+
+    //build US totals row
+    const us_totals_row = promptTotalsRow({
+      tests: totalUS[32],
+      infections: totalUS[28],
+      deaths: totalUS[30],
+      hospitalized: raw["us"][hospUSidx],
+      hospitalizedState: raw[stateCode][hospStateIdx],
+      stateCode: stateCode,
+    });
+
+    accumulated[stateCode] = template({
+      content,
+      vars: {
+        email: candidate.email,
+        nodata: isND ? getStateNoDataPrompt(fullStateName) : "",
+        us_totals_row,
+      },
+    });
+
+    logger.log(
+      `${stateCode} email size (appx): ${
+        byteSize(accumulated[stateCode]) / 1024
+      } Kb`
+    );
   }
 
   const analyticsTag = sandboxed
     ? ""
     : trackEmailOpen(candidate, {
-        el: `${state}/${toISOdate(currentDate)}`,
+        el: `${stateCode}/${toISOdate(currentDate)}`,
         ev: 1,
-        dp: `/email/${state}/${toISOdate(currentDate)}`,
+        dp: `/email/${stateCode}/${toISOdate(currentDate)}`,
       });
 
-  const placeholder = `<div>track</div>`;
-  const message = (cachedStateData || accumulated[state])
-    .replace(placeholder, analyticsTag)
-    .replace("{{email}}", candidate.email)
-    .replace("{{nodata}}", isND ? getStateNoDataPrompt(fullStateName) : "");
+  const content = cachedStateData || accumulated[stateCode];
+
+  const message = template({
+    content,
+    vars: {
+      analytics: analyticsTag,
+    },
+  });
 
   const subject = promptCurrentSubject({
     prefix: subjectPrefix,
-    state,
-    stateNamesMap: { [state]: fullStateName },
+    state: stateCode,
+    stateNamesMap: { [stateCode]: fullStateName },
     user: candidate,
   });
 

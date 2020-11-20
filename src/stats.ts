@@ -5,22 +5,6 @@ const getLastStatsDate = () => {
 };
 
 /**
- * @summary gets stats by state or country
- * @param {boolean} [isCountry]
- * @returns {number[][]}
- */
-const getStats = (isCountry = false) => {
-  const { rawCountryStatsShName, rawStateStatsShName } = CONFIG;
-
-  const statSheetName = isCountry ? rawCountryStatsShName : rawStateStatsShName;
-
-  return SpreadsheetApp.getActiveSpreadsheet()
-    .getSheetByName(statSheetName)
-    .getDataRange()
-    .getValues();
-};
-
-/**
  * @summary counts by date
  */
 const countByDate = ({
@@ -66,7 +50,7 @@ const updateUserGrowth = ({
   sheet = getUsersSheet(),
   sortDown = recordOnDateSorter(),
   logger = new LogAccumulator(),
-  dict = getSubscribersByDate()
+  dict = getSubscribersByDate(),
 } = {}) => {
   try {
     const scol = getIndexFromA1("H");
@@ -85,7 +69,7 @@ const updateUserGrowth = ({
 
     return true;
   } catch (error) {
-    logger.add(error, "error");
+    logger.log(error, "error");
     return false;
   }
 };
@@ -97,7 +81,7 @@ const updateUnsubGrowth = ({
   sheet = getUsersSheet(),
   sortDown = recordOnDateSorter(),
   logger = new LogAccumulator(),
-  dict = getSubscribersByDate()
+  dict = getSubscribersByDate(),
 } = {}) => {
   try {
     const scol = getIndexFromA1("J");
@@ -138,7 +122,7 @@ const updateUnsubGrowth = ({
 
     return true;
   } catch (error) {
-    logger.add(error, "error");
+    logger.log(error, "error");
     return false;
   }
 };
@@ -450,8 +434,7 @@ const setValidDateChoices = ({
  * @summary looks up state code
  * @param {string[][]} stateNames full name lookup
  */
-const lookupCode = (stateNames: string[][]) : string[][] => {
-
+const lookupCode = (stateNames: string[][]): string[][] => {
   const {
     sheets: { covid19 },
   } = CONFIG;
@@ -467,5 +450,7 @@ const lookupCode = (stateNames: string[][]) : string[][] => {
     "Northern Mariana Islands": "MP",
   };
 
-  return stateNames.map(([fullName]) => [states[fullName] || oddities[fullName]]);
+  return stateNames.map(([fullName]) => [
+    states[fullName] || oddities[fullName],
+  ]);
 };

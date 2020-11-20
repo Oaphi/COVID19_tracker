@@ -12,3 +12,5 @@
 *.d.ts
 secret*
 *eslint*
+
+**/**/test.*

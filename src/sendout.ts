@@ -1,3 +1,7 @@
+import { indexRawStateData, indexRawUsData } from "./raw";
+
+import { ApprovalConfig } from "./approval";
+
 /**
  * @summary makes a sender utility via G Suite
  */
@@ -23,14 +27,14 @@ const makeGSuiteEmailSender = ({
 
       return true;
     } catch (error) {
-      logAccumulator.add(error, "error");
+      logAccumulator.log(error, "error");
       return false;
     }
   });
 
   const status = results.every(Boolean);
 
-  logAccumulator.add(
+  logAccumulator.log(
     `sent ${pluralizeCountable(emails.length, "email")} via G Suite`
   );
 
@@ -62,9 +66,14 @@ const makeAmazonEmailSender = ({
 
   const token = ScriptApp.getIdentityToken();
 
-  const chunked = chunkify(emails, { size: chunkSize || amazonChunkSize });
+  const size = chunkSize || amazonChunkSize;
 
-  const commonParams: Partial<GoogleAppsScript.URL_Fetch.URLFetchRequest> = {
+  const chunked = chunkify(emails, { size });
+
+  const commonParams: Pick<
+    GoogleAppsScript.URL_Fetch.URLFetchRequest,
+    "method" | "url" | "muteHttpExceptions" | "contentType" | "headers"
+  > = {
     method: "post",
     url: ec2uri,
     muteHttpExceptions: true,
@@ -91,10 +100,10 @@ const makeAmazonEmailSender = ({
 
     const { length } = requests;
 
-    logAccumulator.add(
+    logAccumulator.log(
       success
-        ? `Chunks via Amazon SES: ${length} (max ${pluralizeCountable(
-            length * amazonChunkSize,
+        ? `SES chunks: ${length} (max ${pluralizeCountable(
+            length * size,
             "email"
           )})`
         : `Failure during send: (${responses.find(
@@ -104,7 +113,7 @@ const makeAmazonEmailSender = ({
 
     return success;
   } catch (error) {
-    logAccumulator.add(error, "error");
+    logAccumulator.log(error, "error");
     return false;
   }
 };
@@ -212,173 +221,183 @@ const sendToUnsentOnly = () => {
 
 /**
  * @summary prepares sendout callback
- * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet user sheet
- * @param {GoogleAppsScript.Spreadsheet.Sheet} covidStatsSheet
  * @param {{ sandboxed: boolean, max: number, usrs?: Candidate[] }} config
  * @param {GeneralSettings} settings
  */
-const sendout = (sheet, covidStatsSheet, { sandboxed, max, usrs }, settings) =>
+const sendout = (
+  userSheet: GoogleAppsScript.Spreadsheet.Sheet,
+  covidStatsSheet: GoogleAppsScript.Spreadsheet.Sheet,
+  { sandboxed, max, usrs },
+  settings
+) => (STATE: typeof State, startRow: number) => {
+  const logger = new LogAccumulator("sendout");
 
-  (STATE: typeof State, startRow: number) => {
-    const logger = new LogAccumulator("sendout");
+  const totalUS = getTotalByUS(covidStatsSheet);
 
-    const totalUS = getTotalByUS(covidStatsSheet);
+  const covidDataByState = getStateStats(covidStatsSheet);
 
-    const covidDataByState = getStateStats(covidStatsSheet);
+  const tr = getUserRecords({ start: startRow - 1, max }); //index 0-based
 
-    const tr = getUserRecords({ start: startRow - 1, max }); //index 0-based
+  //TODO: rework flow if list of users is provided
+  let { unique: candidates, invalid } = usrs
+    ? { unique: usrs, invalid: 0 }
+    : getUsers(tr);
 
-    //TODO: rework flow if list of users is provided
-    let { unique: candidates, invalid } = usrs
-      ? { unique: usrs, invalid: 0 }
-      : getUsers(tr);
+  let {
+    emails: {
+      retryRecords: retry,
+      templates: { main: templateName },
+    },
+    sheets: { states, country },
+  } = CONFIG;
 
-    let {
-      emails: {
-        retryRecords: retry,
-        templates: { main: templateName },
-      },
-    } = CONFIG;
+  //impure by design, mutates candidates array!
+  const addedInvalid = addCandidatesWhileInvalid({
+    logger,
+    invalid,
+    retry,
+    list: candidates,
+    max,
+    start: startRow,
+    sheet: userSheet,
+  });
 
-    //impure by design, mutates candidates array!
-    const addedInvalid = addCandidatesWhileInvalid({
-      logger,
-      invalid,
-      retry,
-      list: candidates,
-      max,
-      start: startRow,
-      sheet,
-    });
+  logger.log(`added ${pluralizeCountable(addedInvalid, "candidate")} extra`);
 
-    logger.add(`added ${pluralizeCountable(addedInvalid, "candidate")} extra`);
+  const currentDate = getcelldate(covidStatsSheet);
 
-    const currentDate = getcelldate(covidStatsSheet);
+  const rowIndicesSent = [];
 
-    const rowIndicesSent = [];
+  const stateNames = getStateNames();
 
-    const stateNames = getStateNames();
+  const conf = new ApprovalConfig({
+    templateName,
+    covidDataByState,
+    currentDate,
+    stateNames,
+    totalUS,
+  });
 
-    const sendoutConfig = new ApprovalConfig({
-      templateName,
-      covidDataByState,
-      currentDate,
-      stateNames,
-      timezone: STATE.timezone,
-      totalUS,
-    });
+  conf.addLookup("us", getColLookupUS(logger));
+  conf.addLookup("state", getColLookupState(logger));
 
-    const stateStats = getCovid19Stats();
-    const noDataStates = reportedNoData(stateStats);
+  //set raw state data in case we need it
+  conf.addRaw(indexRawStateData(states));
+  conf.addRaw(indexRawUsData(country));
+  
 
-    for (const candidate of candidates) {
-      const { email, state, status, index } = candidate;
+  const stateStats = getCovid19Stats();
+  const noDataStates = reportedNoData(stateStats);
 
-      if (!validForSending(email, state, status)) {
-        STATE.addStartIfNoFailures();
+  for (const candidate of candidates) {
+    const { email, state, status, index } = candidate;
+
+    if (!validForSending(email, state, status)) {
+      STATE.addStartIfNoFailures();
+      continue;
+    }
+
+    if (!STATE.canContinue()) {
+      break;
+    }
+
+    try {
+      const result = handleApproval(
+        candidate,
+        logger,
+        conf,
+        sandboxed,
+        noDataStates
+      );
+
+      if (!result) {
+        STATE.countFailed().saveFailure();
         continue;
       }
 
-      if (!STATE.canContinue()) {
+      rowIndicesSent.push(index);
+
+      STATE.countSucceeded().incrementStartIfNoFailures();
+    } catch (error) {
+      logger.log(error, "error");
+
+      STATE.countFailed().saveFailure();
+
+      const isCancelled = handleError(error, candidate);
+
+      if (isCancelled) {
         break;
       }
-
-      try {
-        const result = handleApproval(
-          candidate,
-          sendoutConfig,
-          sandboxed,
-          noDataStates
-        );
-
-        if (!result) {
-          STATE.countFailed().saveFailure();
-          continue;
-        }
-
-        rowIndicesSent.push(index);
-
-        STATE.countSucceeded().incrementStartIfNoFailures();
-      } catch (error) {
-        logger.add(error, "error");
-
-        STATE.countFailed().saveFailure();
-
-        const isCancelled = handleError(error, candidate);
-
-        if (isCancelled) {
-          break;
-        }
-      }
     }
+  }
 
-    const {
-      emails: {
-        amazon: { lambda, quota: amazonQuota, identity, senderName, rate },
-      },
-    } = settings;
+  const {
+    emails: {
+      amazon: { lambda, quota: amazonQuota, identity, senderName, rate },
+    },
+  } = settings;
 
-    const emailChunks = chunkify(sendoutConfig.emails, {
-      limits: [amazonQuota],
-    });
+  const emailChunks = chunkify(conf.emails, {
+    limits: [amazonQuota],
+  });
 
-    const [sendViaAmazon = [], sendViaGoogle = []] = emailChunks;
+  const [sendViaAmazon = [], sendViaGoogle = []] = emailChunks;
 
-    logger
-      .add(`via Amazon: ${sendViaAmazon.length}`)
-      .add(`via G Suite: ${sendViaGoogle.length}`);
+  logger
+    .log(`via Amazon: ${sendViaAmazon.length}`)
+    .log(`via G Suite: ${sendViaGoogle.length}`);
 
-    const sendGSuiteWithErrorAccumulation = makeGSuiteEmailSender({
-      logAccumulator: logger,
-      senderName,
-    });
+  const sendGSuiteWithErrorAccumulation = makeGSuiteEmailSender({
+    logAccumulator: logger,
+    senderName,
+  });
 
-    const sendSESwithErrorAccumulation = makeAmazonEmailSender({
-      logAccumulator: logger,
-      ec2uri: lambda + "/send",
-      asPrimary: identity === "primary",
-      senderName,
-      rate,
-    });
+  const sendSESwithErrorAccumulation = makeAmazonEmailSender({
+    logAccumulator: logger,
+    ec2uri: lambda + "/send",
+    asPrimary: identity === "primary",
+    senderName,
+    rate,
+  });
 
-    if (!sandboxed) {
-      sendSESwithErrorAccumulation(sendViaAmazon);
-      sendGSuiteWithErrorAccumulation(sendViaGoogle);
-    }
+  if (!sandboxed) {
+    sendSESwithErrorAccumulation(sendViaAmazon);
+    sendGSuiteWithErrorAccumulation(sendViaGoogle);
+  }
 
-    logger.add("finished sending email");
+  logger.log("finished sending email");
 
-    logger.dumpAll();
+  logger.dumpAll();
 
-    STATE.log();
+  STATE.log();
 
-    updateSentStatus({
-      startRow,
-      rows: rowIndicesSent,
-      sheet,
-    });
+  updateSentStatus({
+    startRow,
+    rows: rowIndicesSent,
+    sheet: userSheet,
+  });
 
-    promptSendoutStats(STATE, logger);
+  promptSendoutStats(STATE, logger);
 
-    STATE.processed === candidates.length ? STATE.allDone() : STATE.save();
+  STATE.processed === candidates.length ? STATE.allDone() : STATE.save();
 
-    const {
-      emails: {
-        sandbox: { wait },
-      },
-    } = CONFIG;
+  const {
+    emails: {
+      sandbox: { wait },
+    },
+  } = CONFIG;
 
-    if (sandboxed && STATE.succeeded > 0) {
-      Utilities.sleep(wait);
-      promptSandboxResult(sendoutConfig.emails);
-    }
-  };
+  if (sandboxed && STATE.succeeded > 0) {
+    Utilities.sleep(wait);
+    promptSandboxResult(conf.emails);
+  }
+};
 
 declare interface TestDailyEmailOptions {
   states?: string[];
   sandbox?: boolean;
   recipient?: string;
-  logger?: LogAccumulator;
+  logger?: InstanceType<typeof LogAccumulator>;
 }
 
 /**
@@ -401,25 +420,33 @@ const sendTestStateEmails = ({
         templates: { main },
         defaultSender,
       },
-      sheets: { covid19 },
+      sheets: { covid19, states: rawStateShname, country: rawUSshname },
     } = CONFIG;
 
-    const sheet = getOrInitSheet({ name: covid19 });
+    const sheet = getSheet(covid19);
 
-    const sendConfig = new ApprovalConfig({
+    const conf = new ApprovalConfig({
       templateName: main,
       covidDataByState: getStateStats(sheet),
       totalUS: getTotalByUS(sheet),
     });
 
+    conf.addLookup("us", getColLookupUS(logger));
+    conf.addLookup("state", getColLookupState(logger));
+
+    //set raw state data in case we need it
+    conf.addRaw(indexRawStateData(rawStateShname));
+    conf.addRaw(indexRawUsData(rawUSshname));
+
     const noData = reportedNoData();
 
     const common = { email: recipient || savedRecipient };
 
-    (states || savedStates).forEach((state) =>
+    (states || savedStates).forEach((state: string) =>
       handleApproval(
         { ...common, state } as Candidate,
-        sendConfig,
+        logger,
+        conf,
         sandbox,
         noData
       )
@@ -430,11 +457,13 @@ const sendTestStateEmails = ({
       senderName: defaultSender,
     });
 
-    const { emails } = sendConfig;
+    const { emails } = conf;
+
+    logger.dumpAll();
 
     return sandbox ? promptSandboxResult(emails) : preparedSend(emails);
   } catch (error) {
-    logger.add(`failed to send test emails: ${error}`, "error");
+    logger.log(`failed to send test emails: ${error}`, "error");
     logger.dumpAll();
     return false;
   }
@@ -452,9 +481,6 @@ const clearSendoutStatus = () => {
     const sh = ss.getSheetByName(userShName);
     const rng = sh.getRange(2, 5, sh.getLastRow(), 1);
     rng.clearContent();
-
-    setDuplicateUserLabels();
-
     return true;
   } catch (error) {
     console.warn(`failed to clear sendout state: ${error}`);
@@ -486,4 +512,54 @@ const sendApprovalEmail = ({ logger = new LogAccumulator(), recipient }) => {
       message,
     },
   ]);
+};
+
+declare interface EmailsInPartsOpts {
+  sender: ReturnType<
+    typeof makeAmazonEmailSender | typeof makeGSuiteEmailSender
+  >;
+  emails: EmailConfig[];
+  logger: InstanceType<typeof LogAccumulator>;
+  parts?: number;
+  wait?: number;
+}
+
+/**
+ * @summary gets total email size in Kb
+ * @param emails
+ */
+const getTotalEmailSize = (emails: EmailConfig[]) =>
+  emails.reduce((a, { message }) => a + byteSize(message), 0) / 1024;
+
+/**
+ * @summary sends emails split into parts and makes stops between calls
+ */
+const sendEmailsInParts = ({
+  sender,
+  emails,
+  logger,
+  parts = 2,
+  wait = 1e3,
+}: EmailsInPartsOpts) => {
+  try {
+    const splitted = partify({ source: emails, parts });
+
+    logger.log(
+      `sending ${parts} parts, total size: ${getTotalEmailSize(emails)} Kb`
+    );
+
+    return splitted.every((part) => {
+      //don't bother sending if empty
+      if (!part.length) {
+        return true;
+      }
+
+      const status = sender(part);
+      Utilities.sleep(wait);
+      return status;
+    });
+  } catch (error) {
+    logger.log(`failed to send in parts: ${error}`, "error");
+    return false;
+  }
 };

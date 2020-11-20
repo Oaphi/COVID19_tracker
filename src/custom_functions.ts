@@ -19,7 +19,7 @@ function perMillion(
   comparedTo = 1e6
 ) {
   try {
-    const source = getStats(isTotalByCountry);
+    const source = getRawData(isTotalByCountry);
 
     const {
       Covid19: { ColumnIndices },

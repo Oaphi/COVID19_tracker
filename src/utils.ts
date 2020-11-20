@@ -1,24 +1,26 @@
-/**
- * @summary adds commas
- * @param {string} nStr
- * @returns {string}
- */
-function addCommas(nStr) {
-  if (nStr !== "+N%2FA%") {
-    nStr = nStr.toFixed(0);
+function addCommas(nStr: string | number): string {
+  try {
+    if (nStr !== "+N%2FA%") {
+      nStr = nStr.toFixed(0);
+    }
+
+    var [int, float] = nStr.split(".");
+
+    var x1 = int;
+
+    var x2 = float ? "." + float : "";
+
+    var rgx = /(\d+)(\d{3})/;
+
+    while (rgx.test(x1)) {
+      x1 = x1.replace(rgx, "$1" + "," + "$2");
+    }
+
+    return x1 + x2;
+  } catch (error) {
+    console.warn(error);
+    return nStr as string;
   }
-
-  var x = nStr.split(".");
-  var x1 = x[0];
-  var x2 = x.length > 1 ? "." + x[1] : "";
-
-  var rgx = /(\d+)(\d{3})/;
-
-  while (rgx.test(x1)) {
-    x1 = x1.replace(rgx, "$1" + "," + "$2");
-  }
-
-  return x1 + x2;
 }
 
 /**
@@ -764,9 +766,8 @@ const pluralizeCountable = (amount, noun, returnAmount = true) => {
 
 /**
  * @summary joins a list of entities ("a,b, and c")
- * @param {string[]} entities
  */
-const getJoinedEntityList = (entities) => {
+const getJoinedEntityList = (entities: string[]) => {
   const { length } = entities;
 
   const addComma = length > 2;
@@ -1809,7 +1810,13 @@ declare interface ColumnMixinOpts {
   values: any[][];
 }
 
-const partify = ({ source, parts = 2 }) => {
+const partify = <T>({
+  source,
+  parts = 2,
+}: {
+  source: T[];
+  parts?: number;
+}): T[][] => {
   const size = Math.ceil(source.length / parts) || 1;
 
   const output = [];
@@ -1901,3 +1908,16 @@ const foldGrids = (operation: (a: any, b: any) => any, ...grids: any[][]) =>
   grids.reduce((acc, cur) =>
     acc.map((row, ri) => row.map((cell, ci) => operation(cell, cur[ri][ci])))
   );
+
+const getRow = (sh: GoogleAppsScript.Spreadsheet.Sheet, row = 1) =>
+  sh.getRange(row, 1, 1, sh.getMaxColumns());
+
+const getRowVals = (sh: GoogleAppsScript.Spreadsheet.Sheet, row = 1) =>
+  getRow(sh, row).getValues()[0];
+
+/**
+ * @summary gets sheet grid shrunk by M rows top and N rows bottom
+ */
+const getGridVals = (sh : GoogleAppsScript.Spreadsheet.Sheet, startRow = 1, endRow = sh.getLastRow()) => {
+  return sh.getDataRange().offset(startRow - 1, 0, endRow - startRow + 1, sh.getLastColumn()).getValues();
+};

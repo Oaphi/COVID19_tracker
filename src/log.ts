@@ -1,44 +1,43 @@
+type Loggable = string | Error | Array<any> | object;
+
+type LogLevel = "error" | "log" | "warning";
+
 var LogAccumulator = class {
+  prefix: string = "";
+
+  errors: Map<number, Loggable>;
+  logs: Map<number, Loggable>;
+  warnings: Map<number, Loggable>;
 
   constructor(prefix = "") {
     this.prefix = prefix;
 
-    /** @type {Map.<String,Error>} */
     this.errors = new Map();
-
-    /** @type {Map.<String,Object>} */
+    this.warnings = new Map();
     this.logs = new Map();
-
   }
 
-  formatLog(stamp, log) {
+  formatLog(stamp: MaybeDate, log: Loggable) {
     const { prefix } = this;
-    return `${prefix ? `[${prefix}] ` : ""}${new Date(stamp).toLocaleString()} | ${log}`;
+    return `${prefix ? `[${prefix}] ` : ""}${new Date(
+      stamp
+    ).toLocaleString()} | ${log}`;
   }
 
-  /**
-   * @summary adds log to list of logs
-   * @param {object|Error} log 
-   * @param {("log"|"error")} [type]
-   * @returns {LogAccumulator}
-   */
-  add(log, type = "log") {
+  log(log: Loggable, type: LogLevel = "log") {
     const { errors, logs } = this;
 
     const now = Date.now();
 
-    type === "log" && logs.set(now, log);
-    type === "error" && errors.set(now, log);
-
-    return this;
+    type === "log" && logs.set(now, JSON.stringify(log));
+    type === "error" && errors.set(now, log as Error);
   }
 
-  /**
-   * @summary dumps log
-   * @param {("log"|"error")} [type]
-   * @returns {LogAccumulator}
-   */
-  dump(type = "log") {
+  warn(log: Loggable) {
+    this.log(log, "warning");
+  }
+
+  dump(type: LogLevel = "log") {
     const { errors, logs } = this;
 
     const logged = type === "log" ? logs : errors;
@@ -53,26 +52,15 @@ var LogAccumulator = class {
       .join("\n");
 
     console.log(dump);
-
-    return this;
   }
 
-  /**
-   * @summary dumps all logs
-   * @returns {LogAccumulator}
-   */
   dumpAll() {
     this.dump("error");
+    this.dump("warning");
     this.dump("log");
-    return this;
   }
 
-  /**
-   * @summary gets logs joined
-   * @param {("log"|"error")} type 
-   * @returns {string}
-   */
-  get(type = "log") {
+  get(type: Loggable = "log") {
     const { errors, logs } = this;
 
     const logged = type === "log" ? logs : errors;
@@ -83,19 +71,15 @@ var LogAccumulator = class {
       .join("\n");
   }
 
-  /**
-   * @summary gets all log levels
-   * @returns {string[]}
-   */
-  getAll() {
+  getAll(): string[] {
     const { errors, logs } = this;
-    return [...errors.entries(), ...logs.entries()]
-      .map(([stamp, log]) => this.formatLog(stamp, log));
+    return [...errors.entries(), ...logs.entries()].map(([stamp, log]) =>
+      this.formatLog(stamp, log)
+    );
   }
 };
 
 var Benchmarker = class {
-
   /**
    * @summary ends benchmark
    * @returns {Benchmarker}
@@ -145,7 +129,7 @@ var Benchmarker = class {
 
   /**
    * @summary returns difference between start and end
-   * @param {"milliseconds"|"seconds"|"minutes"} fraction 
+   * @param {"milliseconds"|"seconds"|"minutes"} fraction
    * @returns {number}
    */
   static took(fraction = "milliseconds") {
@@ -153,14 +137,13 @@ var Benchmarker = class {
     const divisor = fractions[fraction];
     return (ended - started) / divisor;
   }
-
 };
 
 Benchmarker.running = false;
 Benchmarker.ended = 0;
 Benchmarker.started = 0;
 Benchmarker.fractions = {
-  "milliseconds": 1,
-  "seconds": 1000,
-  "minutes": 60
+  milliseconds: 1,
+  seconds: 1000,
+  minutes: 60,
 };

@@ -122,7 +122,7 @@ const getEmailTrackingState = () => {
 //no support for class props in GAS yet;
 const StateStatics = {
     defStart: 1,
-    defThreshold: 5,
+    defThreshold: 6,
 
     /** @type {State} */
     initializedState: null
@@ -168,8 +168,6 @@ var State = class {
 
         this.threshold = +threshold * 6e4;
 
-        this.timezone = Session.getScriptTimeZone();
-
         this.storeName = storeName;
 
         this.startedAt = Date.now();
@@ -179,18 +177,16 @@ var State = class {
 
     /**
      * @summary gets locale formatted start datetime
-     * @returns {string}
      */
-    get formattedStart() {
+    get formattedStart(): string {
         const { startedAt } = this;
         return new Date(startedAt).toLocaleString();
     }
 
     /**
      * @summary gets formatted passed time (in seconds)
-     * @returns {string}
      */
-    get formattedPassed() {
+    get formattedPassed(): string {
         const { timePassed } = this;
         return Math.floor(timePassed / 1e3);
     }
@@ -453,8 +449,7 @@ var State = class {
             start,
             lastTimeFailed,
             lastTimeSucceeded,
-            threshold,
-            timezone
+            threshold
         } = this;
 
         const toSave = {
@@ -463,8 +458,7 @@ var State = class {
             lastTimeFailed,
             lastTimeSucceeded,
             start,
-            threshold,
-            timezone
+            threshold
         };
 
         const prepared = JSON.stringify(toSave);

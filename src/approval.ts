@@ -1,9 +1,25 @@
+import { rawDataRecord } from "./raw";
+
 class ApprovalConfig {
   template: GoogleAppsScript.HTML.HtmlTemplate;
 
   stateNames: string[];
 
   emails: EmailConfig[] = [];
+
+  columnLookup: Partial<
+    Record<"us" | "state", ReturnType<typeof getColLookupUS>>
+  > = {};
+
+  weekday: string;
+
+  totalUS: number[];
+
+  raw: rawDataRecord = {};
+
+  timezone: string;
+
+  currentDate: Date;
 
   /**
    * @param {ApprovalSettings}
@@ -30,7 +46,9 @@ class ApprovalConfig {
 
     this.notices = getOddsNoticeSettings();
 
-    this.template = HtmlService.createTemplateFromFile(`html/templates/${templateName}`);
+    this.template = HtmlService.createTemplateFromFile(
+      `html/templates/${templateName}`
+    );
 
     this.timezone = timezone;
 
@@ -51,6 +69,16 @@ class ApprovalConfig {
   get empty() {
     const { emails } = this;
     return emails.length === 0;
+  }
+
+  addLookup(type: "us" | "state", lookup: ReturnType<typeof getColLookupUS>) {
+    this.columnLookup[type] = lookup;
+  }
+
+  addRaw(raw: rawDataRecord) {
+    for (const key in raw) {
+      this.raw[key] = raw[key];
+    }
   }
 }
 
@@ -81,11 +109,9 @@ function doApprove({ sandboxed = false, safe = false } = {}) {
 
   const userEmail = getUserEmail();
 
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-
   const { statsShName, userShName } = CONFIG;
-  const covidStatsSheet = spreadsheet.getSheetByName(statsShName);
-  const usersSheet = spreadsheet.getSheetByName(userShName);
+  const covidStatsSheet = getSheet(statsShName);
+  const usersSheet = getSheet(userShName);
 
   const ui = SpreadsheetApp.getUi();
 
@@ -260,3 +286,7 @@ const safeApprove = () => {
 
   return doApprove(config);
 };
+
+export {
+  ApprovalConfig
+}

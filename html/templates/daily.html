@@ -124,18 +124,7 @@
 
               <?!= separateNotice ?>
 
-
-              <td>
-                <table width="590" border="0" cellspacing="0" cellpadding="0">
-                  <tr>
-                    <td width="590" align="left" valign="top" class="padding_side"
-                      style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000; padding-top:20px; line-height:20px;">
-                      U.S. totals to date: <?= countryTOTtes ?> tests, <?= countryTOTinf ?> infections,
-                      <?= countryTOTdea ?> deaths</td>
-                  </tr>
-                </table>
-              </td>
-
+              {{us_totals_row}}
 
               <tr>
                 <td>
@@ -480,7 +469,7 @@
   </table>
   <!--Full width table End-->
 
-  <div>track</div>
+  {{analytics}}
 
 </body>
 
