@@ -1,5 +1,14 @@
 ///<reference types="../fetch" />
 
+import {
+  getRngToLast,
+  getSheet,
+  boolTryDecorator,
+  rand,
+  toISOdate,
+  toResCode,
+} from "./utils";
+
 /**
  * @typedef {object} analyticsConfig
  * @property {string} [baseURI] analytics URI
@@ -68,12 +77,13 @@ const makeAnalyticsQuery = (config, eventType) => {
   });
 };
 
+type MaybeDate = number | string | Date;
+
 class DateRange {
-  /**
-   * @param {number|string|Date} start
-   * @param {number|string|Date} end
-   */
-  constructor(start, end) {
+  end: MaybeDate;
+  start: MaybeDate;
+
+  constructor(start: MaybeDate, end: MaybeDate) {
     const defaultDate = Date.now();
     this.start = new Date(start || defaultDate);
     this.end = new Date(end || defaultDate);
@@ -99,33 +109,25 @@ class DateRange {
  */
 const resetAnalyticsData = ({
   store = PropertiesService.getScriptProperties(),
-  onError = console.warn,
+  onError = console,
 } = {}) => {
   const {
     properties: { pull },
     analytics: { dataColumns },
-    sheets: { tracking: name },
+    sheets: { tracking },
   } = CONFIG;
 
-  try {
+  return boolTryDecorator(onError, () => {
     store.deleteProperty(pull);
 
-    const sheet = getOrInitSheet({ name });
+    const sheet = getSheet(tracking);
 
-    const rng = sheet.getRange(
-      1,
-      dataColumns + 1,
-      sheet.getMaxRows(),
-      sheet.getMaxColumns()
-    );
+    const rng = getRngToLast(sheet, 1, dataColumns + 1);
 
     rng.clearContent();
 
     return true;
-  } catch (error) {
-    onError(error);
-    return false;
-  }
+  });
 };
 
 /**
@@ -231,6 +233,33 @@ const makeUserAnalyticsInfo = (
   return { ...recent, ...user };
 };
 
+type DateViews = Record<string, number>;
+
+/**
+ * @summary generic incrementer for a date
+ */
+const incr = (views: DateViews, date: string, mod = 1) =>
+  (views[date] = Math.round(((views[date] || 0) + 1) / mod));
+
+const assignViews = (
+  views: DateViews,
+  date: string,
+  logger: { warn(err: Error): void }
+) => {
+  try {
+
+    //fixup of November, 20th mistake
+    if (date === "2020-11-19") {
+      incr(views, rand() ? date : "2020-11-20");
+      return;
+    }
+
+    incr(views, date);
+  } catch (error) {
+    logger.warn(error);
+  }
+};
+
 /**
  * @summary gets user data from Reporting API
  * @param {AnalyticsReportingOptions}
@@ -242,7 +271,7 @@ const makeUserAnalyticsInfo = (
 const getAnalyticsData = ({
   users = getUsers().unique,
   settings = getTrackingSettings(),
-  onError = console.warn,
+  logger = new LogAccumulator("GA"),
 } = {}) => {
   const {
     analytics: { uri, reportType, maxConnections },
@@ -304,10 +333,10 @@ const getAnalyticsData = ({
           return views;
         }
 
-        views[date] = (views[date] || 0) + 1;
+        assignViews(views, date, logger);
 
         return views;
-      }, {});
+      }, {} as DateViews);
 
     const pipeline = compose(
       mapToSessions,
@@ -318,47 +347,58 @@ const getAnalyticsData = ({
       toOpens
     );
 
-    const chunks = chunkify(requests, { size: maxConnections });
-
-    const flattened: GoogleAppsScript.URL_Fetch.HTTPResponse[] = chunks.flatMap(
-      (requests) => {
-        const responses = UrlFetchApp.fetchAll(requests);
-        Utilities.sleep(1e3 + Math.floor(Math.random() * 3));
-        return responses;
-      }
+    const chunks: GoogleAppsScript.URL_Fetch.URLFetchRequest[][] = chunkify(
+      requests,
+      { size: maxConnections }
     );
 
+    const flattened = chunks.flatMap((requests) => {
+      const responses = UrlFetchApp.fetchAll(requests);
+      Utilities.sleep(1e3 + Math.floor(Math.random() * 3));
+      return responses;
+    });
+
     return {
-      codes: flattened.map((r) => r.getResponseCode()),
+      codes: flattened.map(toResCode),
       data: flattened.map((e, i) =>
         makeUserAnalyticsInfo(users, pipeline(e), i)
       ),
     };
   } catch (error) {
-    onError(error);
+    logger.warn(error);
     return result;
   }
 };
 
-var AnalyticsUser = (() => {
-  const c = function ({ id, sub, email, code, state }) {
+class AnalyticsUser {
+
+  code: string;
+
+  email: string;
+
+  id: string;
+
+  state: string;
+
+  subscribed: string;
+
+  constructor({ id, sub, email, code, state }) {
     this.id = id;
     this.subscribed = toISOdate(sub);
     this.email = email;
     this.code = code;
     this.state = state;
-  };
+  }
 
-  c.fromEntry = ([id, sub, email, code, state]) =>
-    new c({ id, sub, email, code, state });
+  static fromEntry([id, sub, email, code, state]) {
+    return new AnalyticsUser({ id, sub, email, code, state });
+  }
 
-  c.toEntry = () => {
+  toEntry() {
     const { id, subscribed, email, code, state } = this;
     return [id, subscribed, email, code, state];
-  };
-
-  return c;
-})();
+  }
+}
 
 /**
  * @summary gets analytics data for actively selected users
@@ -445,7 +485,6 @@ const sortAnalyticsData = ({
     const sorted = columnSort(rng.getValues(), comparator, sortOn);
 
     rng.setValues(sorted);
-
   } catch (error) {
     onError(error);
     return false;
@@ -649,3 +688,5 @@ const trackEmailOpen = (candidate, config = {}) => {
     return "";
   }
 };
+
+export { updateAnalyticsData };

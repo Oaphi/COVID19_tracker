@@ -1927,10 +1927,16 @@ const getGridVals = (
     .getValues();
 };
 
-const boolTryDecorator = <T>(
+type TryDecorator<S, F> = <N extends any[]>(
   logger: { warn: (err: Error) => void },
-  callback: (...args: any[]) => T,
-  ...args: any
+  callback: (...args: N) => S,
+  ...args: N
+) => S | F;
+
+const boolTryDecorator: TryDecorator<boolean, false> = (
+  logger,
+  callback,
+  ...args
 ) => {
   try {
     return callback(...args);
@@ -1940,6 +1946,25 @@ const boolTryDecorator = <T>(
   }
 };
 
+const conditional = <T extends boolean, P>(condition: T, primary: P) => <S>(
+  secondary: S
+) => (condition ? primary : secondary);
+
+const toResCode = (res: GoogleAppsScript.URL_Fetch.HTTPResponse) => res.getResponseCode();
+
+const rand = (till = 2) => Math.floor(  Math.random() * till  );
+
+export { toResCode };
+
+export { rand };
+
 export {
-  boolTryDecorator
-}
+  boolTryDecorator,
+  conditional,
+  addCommas,
+  getRngToLast,
+  getSheet,
+  prop,
+  topercent,
+  toISOdate,
+};

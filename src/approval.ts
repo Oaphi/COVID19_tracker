@@ -2,7 +2,9 @@ import { rawDataRecord } from "./raw";
 
 import { State } from "./state";
 
-import { boolTryDecorator } from "./utils";
+import { boolTryDecorator, getSheet } from "./utils";
+
+import { sendout } from "./sendout";
 
 class ApprovalConfig {
   template: GoogleAppsScript.HTML.HtmlTemplate;
@@ -129,7 +131,7 @@ function doApprove({ sandboxed = false, safe = false } = {}) {
     start: selectedUserRow,
     callback: sendout(usersSheet, covidStatsSheet, config, settings),
     type: sandboxed ? "sandbox" : "production",
-  });
+  }) as InstanceType<typeof State>;
 
   selectedUserRow && appState.overrideStart(selectedUserRow);
 
@@ -242,7 +244,7 @@ function doApprove({ sandboxed = false, safe = false } = {}) {
     return false;
   }
 
-  const result = boolTryDecorator<boolean>(logger, (as) => as.continue(), appState);
+  const result = boolTryDecorator(logger, (as) => as.continue(), appState);
 
   dumpRelease(logger, lock);
 

@@ -2,6 +2,8 @@ import { indexRawStateData, indexRawUsData } from "./raw";
 
 import { ApprovalConfig } from "./approval";
 
+import { handleApproval } from "./handlers";
+
 /**
  * @summary makes a sender utility via G Suite
  */
@@ -119,8 +121,11 @@ const makeAmazonEmailSender = ({
 /**
  * @summary validates record for sending
  */
-const validForSending = (email: string, state: string, status: string): boolean =>
-  email && state && status === "";
+const validForSending = (
+  email: string,
+  state: string,
+  status: string
+): boolean => email && state && status === "";
 
 /**
  * @summary filters out invalid records
@@ -340,17 +345,15 @@ const sendout = (
 
   logger.log(`via G Suite: ${sendViaGoogle.length}`);
 
-  const sendGSuiteWithErrorAccumulation = makeGSuiteEmailSender({
-    logAccumulator: logger,
-    senderName,
-  });
+  const common = { logAccumulator: logger, senderName };
+
+  const sendGSuiteWithErrorAccumulation = makeGSuiteEmailSender(common);
 
   const sendSESwithErrorAccumulation = makeAmazonEmailSender({
-    logAccumulator: logger,
     ec2uri: lambda + "/send",
     asPrimary: identity === "primary",
-    senderName,
     rate,
+    ...common,
   });
 
   if (!sandboxed) {
@@ -556,3 +559,5 @@ const sendEmailsInParts = ({
     return false;
   }
 };
+
+export { sendout };

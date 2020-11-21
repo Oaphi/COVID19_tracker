@@ -4,6 +4,9 @@ declare interface EmailConfig {
   message: string;
   attachments?: any[];
 }
+
+import { prop, addCommas, topercent, conditional } from "./utils";
+
 import { ApprovalConfig } from "./approval";
 
 /**
@@ -149,40 +152,34 @@ function handleApproval(
     const stateDeathspercent1 = topercent(stateData[14]);
     const stateDeathspercent2 = topercent(stateData[16]);
 
-    const [newTestColor, newTestVal] = GreenRed2(
-      isND ? noDataDefault : stateTestPercent1
-    );
-    const [weeklyTestColor, weeklyTestVal] = GreenRed2(
-      isND ? noDataDefault : stateTestPercent2
+    const cond = conditional(isND, noDataDefault);
+
+    const [newTestColor, newTestVal] = GreenRed2(cond(stateTestPercent1));
+    const [weeklyTestColor, weeklyTestVal] = GreenRed2(cond(stateTestPercent2));
+
+    const [newInfColor, newInfVal] = RedGreen2(cond(stateInfectionsPercent1));
+    const [weeklyInfColor, weeklyInfVal] = RedGreen2(
+      cond(stateInfectionsPercent2)
     );
 
-    const [newInfectsColor, newInfectsVal] = RedGreen2(
-      isND ? noDataDefault : stateInfectionsPercent1
-    );
-    const [weeklyInfectsColor, weeklyInfectsVal] = RedGreen2(
-      isND ? noDataDefault : stateInfectionsPercent2
-    );
-
-    const [newDeathColor, newDeathVal] = RedGreen2(
-      isND ? noDataDefault : stateDeathspercent1
-    );
+    const [newDeathColor, newDeathVal] = RedGreen2(cond(stateDeathspercent1));
     const [weeklyDeathColor, weeklyDeathVal] = RedGreen2(
-      isND ? noDataDefault : stateDeathspercent2
+      cond(stateDeathspercent2)
     );
 
     tmpl.stateDEA1val = newDeathVal;
     tmpl.stateDEA2val = weeklyDeathVal;
     tmpl.stateTES1val = newTestVal;
     tmpl.stateTES2val = weeklyTestVal;
-    tmpl.stateINF1val = newInfectsVal;
-    tmpl.stateINF2val = weeklyInfectsVal;
+    tmpl.stateINF1val = newInfVal;
+    tmpl.stateINF2val = weeklyInfVal;
 
     tmpl.stateDEA1clr = `color:${newDeathColor}`;
     tmpl.stateDEA2clr = `color:${weeklyDeathColor}`;
     tmpl.stateTES1clr = `color:${newTestColor}`;
     tmpl.stateTES2clr = `color:${weeklyTestColor}`;
-    tmpl.stateINF1clr = `color:${newInfectsColor}`;
-    tmpl.stateINF2clr = `color:${weeklyInfectsColor}`;
+    tmpl.stateINF1clr = `color:${newInfColor}`;
+    tmpl.stateINF2clr = `color:${weeklyInfColor}`;
 
     tmpl.TESstatement = buildStatement(
       stateCode,
@@ -270,7 +267,7 @@ function handleApproval(
     );
   }
 
-  const date = prop(acc, "currentDate", () => toISOdate(gmtToEdt(currentDate)));
+  const date = prop(acc, "currentDate", () => toISOdate(currentDate));
 
   const analyticsTag = sandboxed
     ? ""
@@ -306,11 +303,8 @@ function handleApproval(
 
 /**
  * @summary handles sendout errors
- * @param {Error} error
- * @param {Candidate} candidate
- * @returns {boolean}
  */
-const handleError = (error, candidate) => {
+const handleError = (error: Error, candidate: Candidate): boolean => {
   const ui = SpreadsheetApp.getUi();
 
   const { message } = error;
@@ -325,3 +319,5 @@ const handleError = (error, candidate) => {
 
   return shouldContinue === ui.Button.CANCEL;
 };
+
+export { handleApproval, handleError };
