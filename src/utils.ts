@@ -486,12 +486,12 @@ const getDayOfWeek = (date = new Date(), locale = "en-US") => {
 
 /**
  * @summary gets value from object or inits it via callback
- * @param {object} obj
- * @param {string} propName
- * @param {function(object) : any} [callback]
- * @returns {any}
  */
-const prop = (obj, propName, callback) => {
+const prop = <T>(
+  obj: object,
+  propName: string,
+  callback: (arg0: object) => T
+): T => {
   if (propName in obj) {
     return obj[propName];
   }
@@ -501,8 +501,6 @@ const prop = (obj, propName, callback) => {
     return obj[propName];
   }
 };
-
-type StatementType = "test" | "death" | "positive test";
 
 /**
  * @summary builds <state> was <place> today: <new total> new <type> per 1MM residents | <total> total
@@ -1918,6 +1916,30 @@ const getRowVals = (sh: GoogleAppsScript.Spreadsheet.Sheet, row = 1) =>
 /**
  * @summary gets sheet grid shrunk by M rows top and N rows bottom
  */
-const getGridVals = (sh : GoogleAppsScript.Spreadsheet.Sheet, startRow = 1, endRow = sh.getLastRow()) => {
-  return sh.getDataRange().offset(startRow - 1, 0, endRow - startRow + 1, sh.getLastColumn()).getValues();
+const getGridVals = (
+  sh: GoogleAppsScript.Spreadsheet.Sheet,
+  startRow = 1,
+  endRow = sh.getLastRow()
+) => {
+  return sh
+    .getDataRange()
+    .offset(startRow - 1, 0, endRow - startRow + 1, sh.getLastColumn())
+    .getValues();
 };
+
+const boolTryDecorator = <T>(
+  logger: { warn: (err: Error) => void },
+  callback: (...args: any[]) => T,
+  ...args: any
+) => {
+  try {
+    return callback(...args);
+  } catch (error) {
+    logger.warn(error);
+    return false;
+  }
+};
+
+export {
+  boolTryDecorator
+}

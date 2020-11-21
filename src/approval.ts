@@ -1,5 +1,9 @@
 import { rawDataRecord } from "./raw";
 
+import { State } from "./state";
+
+import { boolTryDecorator } from "./utils";
+
 class ApprovalConfig {
   template: GoogleAppsScript.HTML.HtmlTemplate;
 
@@ -16,6 +20,9 @@ class ApprovalConfig {
   totalUS: number[];
 
   raw: rawDataRecord = {};
+
+  //accumulated templates and variables
+  accumulated: { [x: string] : string } = {};
 
   timezone: string;
 
@@ -53,8 +60,6 @@ class ApprovalConfig {
     this.timezone = timezone;
 
     this.totalUS = totalUS;
-
-    this.accumulated = {};
 
     this.weekday = getDayOfWeek(currentDate);
   }
@@ -99,6 +104,8 @@ function doApprove({ sandboxed = false, safe = false } = {}) {
   if (!hasLock) {
     return promptBusyApproving();
   }
+
+  const logger = new LogAccumulator("daily send");
 
   const settings = getGeneralSettings();
 
@@ -186,7 +193,6 @@ function doApprove({ sandboxed = false, safe = false } = {}) {
   const subject = promptCurrentSubject({
     prefix: subjectPrefix,
     state: candidate.state,
-    user: candidate,
   });
 
   const viaServicesPrompt = promptAmountViaServices(settings);
@@ -236,11 +242,11 @@ function doApprove({ sandboxed = false, safe = false } = {}) {
     return false;
   }
 
-  appState.continue();
+  const result = boolTryDecorator<boolean>(logger, (as) => as.continue(), appState);
 
-  lock.releaseLock();
-  console.log("Mail sent successfully");
-  return true;
+  dumpRelease(logger, lock);
+
+  return result;
 }
 
 /**

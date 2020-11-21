@@ -472,8 +472,6 @@ var State = class {
 
     /**
      * @summary sets threshold that stops execution
-     * @param {number} minutes 
-     * @returns {State}
      */
     setThreshold(minutes = 5) {
         this.threshold = minutes * 6e4;
@@ -503,3 +501,7 @@ State.getState = boundGetState;
  * @returns {boolean}
  */
 const resetPersistedState = () => new State().fullReset();
+
+export {
+    State
+}

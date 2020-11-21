@@ -4,6 +4,7 @@ declare interface EmailConfig {
   message: string;
   attachments?: any[];
 }
+import { ApprovalConfig } from "./approval";
 
 /**
  * @summary fills template and sends out emails
@@ -16,7 +17,7 @@ function handleApproval(
   noDataStates: string[]
 ) {
   const {
-    accumulated,
+    accumulated: acc,
     emails,
     covidDataByState,
     currentDate,
@@ -44,76 +45,66 @@ function handleApproval(
     Covid19: { ColumnIndices: CCI },
   } = indices;
 
-  tmpl.countryTES0 = prop(accumulated, "countryTES0", () =>
-    addCommas(totalUS[23])
-  );
-  tmpl.countryINF0 = prop(accumulated, "countryINF0", () =>
-    addCommas(totalUS[3])
-  );
-  tmpl.countryINF1cmp = prop(accumulated, "countryINF1cmp", () =>
+  tmpl.countryTES0 = prop(acc, "countryTES0", () => addCommas(totalUS[23]));
+  tmpl.countryINF0 = prop(acc, "countryINF0", () => addCommas(totalUS[3]));
+  tmpl.countryINF1cmp = prop(acc, "countryINF1cmp", () =>
     addCommas(totalUS[5])
   );
-  tmpl.countryINF2cmp = prop(accumulated, "countryINF2cmp", () =>
+  tmpl.countryINF2cmp = prop(acc, "countryINF2cmp", () =>
     addCommas(totalUS[7])
   );
-  tmpl.countryDEA0 = prop(accumulated, "countryDEA0", () =>
-    addCommas(totalUS[13])
-  );
-  tmpl.countryDEA1cmp = prop(accumulated, "countryDEA1cmp", () =>
+  tmpl.countryDEA0 = prop(acc, "countryDEA0", () => addCommas(totalUS[13]));
+  tmpl.countryDEA1cmp = prop(acc, "countryDEA1cmp", () =>
     addCommas(totalUS[15])
   );
-  tmpl.countryDEA2cmp = prop(accumulated, "countryDEA2cmp", () =>
+  tmpl.countryDEA2cmp = prop(acc, "countryDEA2cmp", () =>
     addCommas(totalUS[17])
   );
-  tmpl.countryTES1cmp = prop(accumulated, "countryTES1cmp", () =>
+  tmpl.countryTES1cmp = prop(acc, "countryTES1cmp", () =>
     addCommas(totalUS[25])
   );
-  tmpl.countryTES2cmp = prop(accumulated, "countryTES2cmp", () =>
+  tmpl.countryTES2cmp = prop(acc, "countryTES2cmp", () =>
     addCommas(totalUS[27])
   );
 
-  const countryTestsPercent1 = prop(accumulated, "countryTestsPercent1", () =>
+  const countryTestsPercent1 = prop(acc, "countryTestsPercent1", () =>
     topercent(totalUS[24])
   );
   tmpl.countryTES1val = GreenRed2(countryTestsPercent1)[1];
   tmpl.countryTES1clr = "color:" + GreenRed2(countryTestsPercent1)[0];
 
-  const countryTestsPercent2 = prop(accumulated, "countryTestsPercent2", () =>
+  const countryTestsPercent2 = prop(acc, "countryTestsPercent2", () =>
     topercent(totalUS[26])
   );
   tmpl.countryTES2val = GreenRed2(countryTestsPercent2)[1];
   tmpl.countryTES2clr = "color:" + GreenRed2(countryTestsPercent2)[0];
 
-  const countryInfectionsPercent1 = prop(
-    accumulated,
-    "countryInfectionsPercent1",
-    () => topercent(totalUS[4])
+  const countryInfectionsPercent1 = prop(acc, "countryInfectionsPercent1", () =>
+    topercent(totalUS[4])
   );
   tmpl.countryINF1val = RedGreen2(countryInfectionsPercent1)[1];
   tmpl.countryINF1clr = "color:" + RedGreen2(countryInfectionsPercent1)[0];
 
-  const countryInfectionsPercent2 = prop(
-    accumulated,
-    "countryInfectionsPercent2",
-    () => topercent(totalUS[6])
+  const countryInfectionsPercent2 = prop(acc, "countryInfectionsPercent2", () =>
+    topercent(totalUS[6])
   );
   tmpl.countryINF2val = GreenRed2(countryInfectionsPercent2)[1];
   tmpl.countryINF2clr = "color:" + RedGreen2(countryInfectionsPercent2)[0];
 
-  const countryDeathspercent1 = prop(accumulated, "countryDeathspercent1", () =>
+  const countryDeathspercent1 = prop(acc, "countryDeathspercent1", () =>
     topercent(totalUS[14])
   );
   tmpl.countryDEA1val = RedGreen2(countryDeathspercent1)[1];
   tmpl.countryDEA1clr = "color:" + RedGreen2(countryDeathspercent1)[0];
 
-  const countryDeathsPercent2 = prop(accumulated, "countryDeathsPercent2", () =>
+  const countryDeathsPercent2 = prop(acc, "countryDeathsPercent2", () =>
     RedGreen2(topercent(totalUS[16]))
   );
   tmpl.countryDEA2val = countryDeathsPercent2[1];
   tmpl.countryDEA2clr = "color:" + countryDeathsPercent2[0];
 
   const countryRatioInfectedToTests = prop(
-    accumulated,
+    acc,
     "countryRatioInfectedToTests",
     () => topercent(totalUS[43])
   );
@@ -122,14 +113,14 @@ function handleApproval(
   var fullStateName = stateData[2];
 
   const formattedDate = prop(
-    accumulated,
+    acc,
     "formattedDate",
     () => ` ${toScriptDateString(currentDate, false)}`
   );
 
   tmpl.fulldate = weekday;
 
-  const cachedStateData = accumulated[stateCode];
+  const cachedStateData = acc[stateCode];
 
   const isND = noDataStates.includes(stateCode);
 
@@ -264,31 +255,32 @@ function handleApproval(
       stateCode: stateCode,
     });
 
-    accumulated[stateCode] = template({
+    acc[stateCode] = template({
       content,
       vars: {
         email: candidate.email,
         nodata: isND ? getStateNoDataPrompt(fullStateName) : "",
         us_totals_row,
       },
+      returnMissing: true,
     });
 
     logger.log(
-      `${stateCode} email size (appx): ${
-        byteSize(accumulated[stateCode]) / 1024
-      } Kb`
+      `${stateCode} email size (appx): ${byteSize(acc[stateCode]) / 1024} Kb`
     );
   }
+
+  const date = prop(acc, "currentDate", () => toISOdate(gmtToEdt(currentDate)));
 
   const analyticsTag = sandboxed
     ? ""
     : trackEmailOpen(candidate, {
-        el: `${stateCode}/${toISOdate(currentDate)}`,
+        el: `${stateCode}/${date}`,
         ev: 1,
-        dp: `/email/${stateCode}/${toISOdate(currentDate)}`,
+        dp: `/email/${stateCode}/${date}`,
       });
 
-  const content = cachedStateData || accumulated[stateCode];
+  const content = cachedStateData || acc[stateCode];
 
   const message = template({
     content,
@@ -301,7 +293,6 @@ function handleApproval(
     prefix: subjectPrefix,
     state: stateCode,
     stateNamesMap: { [stateCode]: fullStateName },
-    user: candidate,
   });
 
   emails.push({

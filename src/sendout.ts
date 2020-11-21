@@ -41,17 +41,15 @@ const makeGSuiteEmailSender = ({
   return status;
 };
 
-/**
- * @typedef {{
- *  asPrimary : boolean,
- *  ec2uri : string,
- *  logAccumulator : LogAccumulator,
- *  senderName : string,
- *  rate : number
- * }} AmazonSendoutConfig
- *
- * @param {AmazonSendoutConfig}
- */
+declare interface AmazonSendoutConfig {
+  asPrimary: boolean;
+  ec2uri: string;
+  logAccumulator?: LogAccumulator;
+  senderName: string;
+  rate: number;
+  chunkSize?: number;
+}
+
 const makeAmazonEmailSender = ({
   rate,
   asPrimary,
@@ -59,7 +57,7 @@ const makeAmazonEmailSender = ({
   logAccumulator = new LogAccumulator(),
   senderName,
   chunkSize,
-}) => (emails: EmailConfig[] = []): boolean => {
+}: AmazonSendoutConfig) => (emails: EmailConfig[] = []): boolean => {
   const {
     emails: { amazonChunkSize },
   } = CONFIG;
@@ -120,12 +118,8 @@ const makeAmazonEmailSender = ({
 
 /**
  * @summary validates record for sending
- * @param {string} [email]
- * @param {string} [state]
- * @param {string} [status]
- * @returns {boolean}
  */
-const validForSending = (email, state, status) =>
+const validForSending = (email: string, state: string, status: string): boolean =>
   email && state && status === "";
 
 /**
@@ -284,7 +278,6 @@ const sendout = (
   //set raw state data in case we need it
   conf.addRaw(indexRawStateData(states));
   conf.addRaw(indexRawUsData(country));
-  
 
   const stateStats = getCovid19Stats();
   const noDataStates = reportedNoData(stateStats);
@@ -343,9 +336,9 @@ const sendout = (
 
   const [sendViaAmazon = [], sendViaGoogle = []] = emailChunks;
 
-  logger
-    .log(`via Amazon: ${sendViaAmazon.length}`)
-    .log(`via G Suite: ${sendViaGoogle.length}`);
+  logger.log(`via Amazon: ${sendViaAmazon.length}`);
+
+  logger.log(`via G Suite: ${sendViaGoogle.length}`);
 
   const sendGSuiteWithErrorAccumulation = makeGSuiteEmailSender({
     logAccumulator: logger,

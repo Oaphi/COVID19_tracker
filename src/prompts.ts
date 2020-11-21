@@ -153,7 +153,7 @@ const promptCurrentSubject = ({
   prefix = "",
 }: {
     prefix: string;
-    state: string; stateNamesMap: { [s: string]: string; };
+    state: string; stateNamesMap?: { [s: string]: string; };
   }): string => {
   const {
     sheets: { covid19 },
