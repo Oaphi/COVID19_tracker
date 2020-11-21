@@ -386,11 +386,10 @@ function setDecimalPlaces(i) {
 /**
  * @todo mixing strings and numbers is a bad practise
  * @summary converts
- * @param {(string|number)} a
- * @returns {string}
  */
-function topercent(a) {
-  if (a === "+N/A%" || a === "0%" || /\d{1,2}%$/.test(a)) {
+function topercent(a: (string | number)): string {
+
+  if (a === "+N/A%" || /\d{1,2}%$/.test(a)) {
     return a;
   }
 
@@ -1953,6 +1952,11 @@ const conditional = <T extends boolean, P>(condition: T, primary: P) => <S>(
 const toResCode = (res: GoogleAppsScript.URL_Fetch.HTTPResponse) => res.getResponseCode();
 
 const rand = (till = 2) => Math.floor(  Math.random() * till  );
+
+const compose = (...f: Function[]): Function =>
+  f.reduce((x, y) => (...args) => y(x(...args)));
+
+export { compose };
 
 export { toResCode };
 

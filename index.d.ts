@@ -6,3 +6,7 @@ type valueOf<T, K extends keyof T> = T[K];
 type InstType<T extends { prototype: any }> = T["prototype"];
 
 type StatementType = "test" | "death" | "positive test";
+
+type AnalyticsType = "open" | "click";
+
+type MaybeDate = number | string | Date;

@@ -284,11 +284,12 @@
                             }
                         });
 
-                        await asyncGAPIv2({
+                        const totalStatus = await asyncGAPIv2({
                             funcName: "updateTotalGA",
-                            onSuccess: () => notification.open("Updated daily engagement"),
-                            onFailure: () => notification.open("Failed to get daily engagement")
+                            onFailure: (err) => notification.open(`failed totals: ${err}`)
                         });
+
+                        notify(totalStatus ? `Set totals` : `Failed to set totals`);
 
                         return state.stop();
                     }
